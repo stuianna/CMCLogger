@@ -1,0 +1,6 @@
+[submodule "modules/configChecker"]
+	path = modules/configChecker
+	url = https://github.com/stuianna/configChecker.git
+[submodule "modules/DBOps"]
+	path = modules/DBOps
+	url = https://github.com/stuianna/DBOps.git
