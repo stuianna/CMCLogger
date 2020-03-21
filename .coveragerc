@@ -1,0 +1,10 @@
+[run]
+source = .
+
+omit =
+    tests/*
+    modules/configChecker/tests/*
+		modules/__init__.py
+		modules/configChecker/__init__.py
+		coinMarketCap/*
+		__init__.py

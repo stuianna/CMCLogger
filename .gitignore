@@ -1,3 +1,5 @@
 __pycache__/
 tags
 coinMarketCap/
+.coverage
+config.ini
