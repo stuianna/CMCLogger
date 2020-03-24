@@ -87,13 +87,13 @@ class CMCAPI_Wrapper():
         parameters = self.__updateRequesetParameters()
         log.debug("Attempting API call at '{}' with parameters '{}'".format(settings.getLatest_Url,parameters))
         try:
-            response = self.__getLatestSession.get(settings.getLatest_Url,params=parameters);
+            response = self.__getLatestSession.get(settings.getLatest_Url,params=parameters,timeout=settings.API_call_timeout_seconds);
         except ConnectionError:
             self.__getLatestStatus = self.__makeCustomStatusError(3,"Internal error: Connection exception when conduction API call")
             self.__getLatestData = None
             return False,None
         except Timeout:
-            self.__getLatestStatus = self.__makeCustomStatusError(4,"Internal error: Timeout exception when conduction API call")
+            self.__getLatestStatus = self.__makeCustomStatusError(4,"Internal error: Timeout exception when conduction API call, no internet connection?")
             self.__getLatestData = None
             return False,None
         except TooManyRedirects:

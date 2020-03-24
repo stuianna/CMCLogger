@@ -159,7 +159,7 @@ class API_getting_requests(unittest.TestCase):
         session_mock.return_value = mock_response
 
         self.api.getLatest();
-        session_mock.assert_called_with(expectedUrl,params=expectedParameters)
+        session_mock.assert_called_with(expectedUrl,params=expectedParameters,timeout=settings.API_call_timeout_seconds)
 
     @mock.patch('modules.cmcapi_wrapper.Session.get')
     def test_status_200_results_in_true_return(self,session_mock):
