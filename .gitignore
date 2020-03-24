@@ -3,3 +3,4 @@ tags
 coinMarketCap/
 .coverage
 config.ini
+data/
