@@ -45,6 +45,31 @@ def setStatusFileOptions(status,workingDirectory):
             int,
             0)
     status.setExpectation(
+            settings.status_file_last_failed_secion_name,
+            settings.status_file_option_timeStamp,
+            str,
+            '')
+    status.setExpectation(
+            settings.status_file_last_failed_secion_name,
+            settings.status_file_option_error_code,
+            int,
+            0)
+    status.setExpectation(
+            settings.status_file_last_failed_secion_name,
+            settings.status_file_option_error_message,
+            str,
+            '')
+    status.setExpectation(
+            settings.status_file_last_failed_secion_name,
+            settings.status_file_option_elapsed,
+            int,
+            0)
+    status.setExpectation(
+            settings.status_file_last_failed_secion_name,
+            settings.status_file_option_credit_count,
+            int,
+            0)
+    status.setExpectation(
             settings.status_file_current_session_section_name,
             settings.status_file_option_successful_calls,
             int,

@@ -161,6 +161,7 @@ class API_getting_requests(unittest.TestCase):
         self.api.getLatest();
         session_mock.assert_called_with(expectedUrl,params=expectedParameters,timeout=settings.API_call_timeout_seconds)
 
+
     @mock.patch('modules.cmcapi_wrapper.Session.get')
     def test_status_200_results_in_true_return(self,session_mock):
 
@@ -240,12 +241,14 @@ class API_getting_requests(unittest.TestCase):
         self.assertIs(status[settings.CMC_status_credit_count],0)
 
 
+    @mock.patch('modules.cmcapi_wrapper.time.sleep')
     @mock.patch('modules.cmcapi_wrapper.Session.get')
-    def test_custom_status_and_false_returned_if_connection_error_occurs(self,session_mock):
+    def test_custom_status_and_false_returned_if_connection_error_occurs(self,session_mock,sleep_mock):
         session_mock.side_effect = ConnectionError()
 
         success = self.api.getLatest();
 
+        settings.API_callRetriesOnFailure = 0
         status = self.api.getLatestStatus()
         self.assertIs(success,False)
         self.assertIs(self.api.getLatestData(),None)

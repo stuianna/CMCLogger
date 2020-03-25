@@ -91,18 +91,12 @@ class CMCAPI_writing_status_files(unittest.TestCase):
     def test_good_status_updates_last_call_timestamp(self):
         self.publisher.writeStatus(goodStatus)
         savedValue =  self.publisher.getStatus().getValue(settings.status_file_last_call_section_name,settings.status_file_option_timeStamp)
-        expectedValue = goodStatus[settings.CMC_status_timestamp]
-        self.assertIs(savedValue,expectedValue)
+        expectedValue = self.publisher.toLocalTime(goodStatus[settings.CMC_status_timestamp])
+        self.assertEqual(savedValue,expectedValue)
 
     def test_good_status_updates_last_call_error_code(self):
         self.publisher.writeStatus(goodStatus)
         savedValue =  self.publisher.getStatus().getValue(settings.status_file_last_call_section_name,settings.status_file_option_error_code)
-        expectedValue = goodStatus[settings.CMC_status_error_code]
-        self.assertIs(savedValue,expectedValue)
-
-    def test_good_status_updates_last_call_error_code(self):
-        self.publisher.writeStatus(goodStatus)
-        savedValue = self.publisher.getStatus().getValue(settings.status_file_last_call_section_name,settings.status_file_option_error_code)
         expectedValue = goodStatus[settings.CMC_status_error_code]
         self.assertIs(savedValue,expectedValue)
 
@@ -122,6 +116,36 @@ class CMCAPI_writing_status_files(unittest.TestCase):
         self.publisher.writeStatus(goodStatus)
         savedValue =  self.publisher.getStatus().getValue(settings.status_file_last_call_section_name,settings.status_file_option_credit_count)
         expectedValue = goodStatus[settings.CMC_status_credit_count]
+        self.assertIs(savedValue,expectedValue)
+
+    def test_bad_status_updates_last_call_timestamp(self):
+        self.publisher.writeStatus(badStatus)
+        savedValue =  self.publisher.getStatus().getValue(settings.status_file_last_failed_secion_name,settings.status_file_option_timeStamp)
+        expectedValue = self.publisher.toLocalTime(badStatus[settings.CMC_status_timestamp])
+        self.assertEqual(savedValue,expectedValue)
+
+    def test_bad_status_updates_last_call_error_code(self):
+        self.publisher.writeStatus(badStatus)
+        savedValue = self.publisher.getStatus().getValue(settings.status_file_last_failed_secion_name,settings.status_file_option_error_code)
+        expectedValue = badStatus[settings.CMC_status_error_code]
+        self.assertIs(savedValue,expectedValue)
+
+    def test_bad_status_updates_last_call_error_message(self):
+        self.publisher.writeStatus(badStatus)
+        savedValue =  self.publisher.getStatus().getValue(settings.status_file_last_failed_secion_name,settings.status_file_option_error_message)
+        expectedValue = badStatus[settings.CMC_status_error_message]
+        self.assertIs(savedValue,expectedValue)
+
+    def test_bad_status_updates_last_call_elapsed(self):
+        self.publisher.writeStatus(badStatus)
+        savedValue =  self.publisher.getStatus().getValue(settings.status_file_last_failed_secion_name,settings.status_file_option_elapsed)
+        expectedValue = badStatus[settings.CMC_status_elapsed]
+        self.assertIs(savedValue,expectedValue)
+
+    def test_bad_status_updates_credits(self):
+        self.publisher.writeStatus(badStatus)
+        savedValue =  self.publisher.getStatus().getValue(settings.status_file_last_failed_secion_name,settings.status_file_option_credit_count)
+        expectedValue = badStatus[settings.CMC_status_credit_count]
         self.assertIs(savedValue,expectedValue)
 
     def test_good_status_updates_successful_calls_current(self):

@@ -5,6 +5,7 @@ from requests import Request, Session
 from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
 import json
 import datetime
+import time
 
 log = logging.getLogger(__name__)
 
@@ -86,22 +87,46 @@ class CMCAPI_Wrapper():
 
         parameters = self.__updateRequesetParameters()
         log.debug("Attempting API call at '{}' with parameters '{}'".format(settings.getLatest_Url,parameters))
-        try:
-            response = self.__getLatestSession.get(settings.getLatest_Url,params=parameters,timeout=settings.API_call_timeout_seconds);
-        except ConnectionError:
-            self.__getLatestStatus = self.__makeCustomStatusError(3,"Internal error: Connection exception when conduction API call")
-            self.__getLatestData = None
-            return False,None
-        except Timeout:
-            self.__getLatestStatus = self.__makeCustomStatusError(4,"Internal error: Timeout exception when conduction API call, no internet connection?")
-            self.__getLatestData = None
-            return False,None
-        except TooManyRedirects:
-            self.__getLatestStatus = self.__makeCustomStatusError(5,"Internal error: Too many redirects exception when conduction API call")
-            self.__getLatestData = None
-            return False,None
+        retries = settings.API_callRetriesOnFailure
+        attempt = 1;
+        while retries >= 0:
+            try:
+                response = self.__getLatestSession.get(settings.getLatest_Url,params=parameters,timeout=settings.API_call_timeout_seconds)
+                retries = -1;
+            except ConnectionError:
+                retries,attempt,done = self.__evaluateAttempt(retries,attempt)
+                if not done:
+                    continue
+                self.__getLatestStatus = self.__makeCustomStatusError(3,"Internal error: Connection exception when conduction API call")
+                self.__getLatestData = None
+                return False,None
+            except Timeout:
+                retries,attempt,done = self.__evaluateAttempt(retries,attempt)
+                if not done:
+                    continue
+                self.__getLatestStatus = self.__makeCustomStatusError(4,"Internal error: Timeout exception when conduction API call, no internet connection?")
+                self.__getLatestData = None
+                return False,None
+            except TooManyRedirects:
+                retries,attempt,done = self.__evaluateAttempt(retries,attempt)
+                if not done:
+                    continue
+                self.__getLatestStatus = self.__makeCustomStatusError(5,"Internal error: Too many redirects exception when conduction API call")
+                self.__getLatestData = None
+                return False,None
 
         return True,response
+
+    def __evaluateAttempt(self,retries,attempt):
+        if retries >= 1:
+            retries = retries - 1;
+            time.sleep(2*attempt)
+            log.warning("Exception occurred on API call attempt {} of {}".format(attempt,settings.API_callRetriesOnFailure));
+            attempt = attempt + 1
+            done = False
+        else:
+            done = True
+        return retries,attempt,done
 
     def __parseSuccessfulGetLatestRequest(self,response):
         try:

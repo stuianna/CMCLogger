@@ -37,6 +37,7 @@ getLatest_Headers = {
         'X-CMC_PRO_API_KEY' : 'default'
         }
 API_call_timeout_seconds = 5
+API_callRetriesOnFailure = 3
 
 CMC_status_timestamp = 'timestamp'
 CMC_status_error_code = 'error_code'
@@ -67,7 +68,7 @@ CMC_data_percent_change_7d = "percent_change_7d"
 CMC_data_last_updated = "last_updated"
 
 # Status file section and option names
-status_file_last_call_section_name = 'Last Call'
+status_file_last_call_section_name = 'Last Successful Call'
 status_file_option_timeStamp = CMC_status_timestamp
 status_file_option_error_code = CMC_status_error_code
 status_file_option_error_message = CMC_status_error_message
@@ -80,3 +81,6 @@ status_file_option_failed_calls = 'failed_calls'
 status_file_option_success_rate = 'success_rate'
 
 status_file_all_time_section_name = 'All Time'
+
+status_file_last_failed_secion_name = 'Last Failed Call'
+
