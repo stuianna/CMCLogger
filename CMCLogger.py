@@ -14,8 +14,16 @@ import logging
 from modules.cmcapi_wrapper import CMCAPI_Wrapper
 from modules.configChecker.configChecker import ConfigChecker
 from modules.data_publisher import DataPublisher
+from modules.DBOps.dbops import DBOps
 
 log = logging.getLogger(__name__)
+
+def setupDatabase(workingDirectory):
+    fileLocation = os.path.join(workingDirectory,settings.data_file_directory,settings.database_file_name)
+    database = DBOps(fileLocation)
+    if not database.exists():
+        return None,False
+    return database,True
 
 def setStatusFileOptions(status,workingDirectory):
 
@@ -229,14 +237,20 @@ if __name__ == '__main__':
     if not setStatusFileOptions(status,workingDirectory):
         log.error("Failed to create required status file, exiting")
         sys.exit()
-    publisher = DataPublisher(status)
 
+    database, success = setupDatabase(workingDirectory)
+    if not success:
+        log.error("Failed to create required database file, exiting")
+        sys.exit()
+
+    publisher = DataPublisher(status,database)
+
+    # Start main functionality
     while True:
         goodResponse = api.getLatest()
         publisher.writeStatus(api.getLatestStatus())
         if goodResponse is True:
-            api.prettyPrint(api.getLatestData())
-        logging.info("Scheduling next API call in {} seconds".format(api.secondsToNextAPICall()))
-        print('',flush=True)
+            publisher.writeData(api.getLatestData())
+        log.info("Scheduling next API call in {} seconds".format(api.secondsToNextAPICall()))
         for i in range(api.secondsToNextAPICall()):time.sleep(1)
 
