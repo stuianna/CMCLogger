@@ -15,6 +15,7 @@ from modules.cmcapi_wrapper import CMCAPI_Wrapper
 from modules.configChecker.configChecker import ConfigChecker
 from modules.data_publisher import DataPublisher
 from modules.DBOps.dbops import DBOps
+from modules.data_reader import DataReader
 
 log = logging.getLogger(__name__)
 
@@ -154,6 +155,12 @@ def getConfigurationOptions(config,workingDirectory):
             str,
             settings.API_option_conversion_currency_default)
     config.setExpectation(
+            settings.
+            API_section_name,
+            settings.API_option_conversion_currency_symbol,
+            str,
+            settings.API_option_conversion_currency_symbol_default)
+    config.setExpectation(
             settings.API_section_name,
             settings.API_option_start_index,
             int,
@@ -210,27 +217,14 @@ if __name__ == '__main__':
         # Help
         # version
 
-    workingDirectory = os.path.dirname(__file__)
-    if not makeDirectoriesAsNeeded(workingDirectory):
-        log.critical("Cannot create required directories for normal operation, exiting.")
-        sys.exit()
-
-    # Check if process already running
-    if daemonAlreadyRunning():
-        sys.exit();
-
     # Setup logging and settings
+    workingDirectory = os.path.dirname(__file__)
     loggingFile = os.path.join(workingDirectory,settings.log_file_directory,settings.log_file_name)
     setupLogging(logging.DEBUG,loggingFile,workingDirectory)
 
-    # Generate and load configuration
-    config = ConfigChecker()
-    if not getConfigurationOptions(config,workingDirectory):
-        log.error("Failed to create required configuration file, exiting.")
+    if not makeDirectoriesAsNeeded(workingDirectory):
+        log.critical("Cannot create required directories for normal operation, exiting.")
         sys.exit()
-
-    # Setup API
-    api = CMCAPI_Wrapper(config);
 
     # Setup output streams
     status = ConfigChecker()
@@ -238,11 +232,23 @@ if __name__ == '__main__':
         log.error("Failed to create required status file, exiting")
         sys.exit()
 
+    # Generate and load configuration
+    config = ConfigChecker()
+    if not getConfigurationOptions(config,workingDirectory):
+        log.error("Failed to create required configuration file, exiting.")
+        sys.exit()
+
     database, success = setupDatabase(workingDirectory)
     if not success:
         log.error("Failed to create required database file, exiting")
         sys.exit()
 
+    # Check if process already running
+    if daemonAlreadyRunning():
+        sys.exit();
+
+    # Setup API
+    api = CMCAPI_Wrapper(config);
     publisher = DataPublisher(status,database)
 
     # Start main functionality

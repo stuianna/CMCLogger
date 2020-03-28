@@ -4,3 +4,4 @@ coinMarketCap/
 .coverage
 config.ini
 data/
+htmlcov

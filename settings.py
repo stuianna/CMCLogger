@@ -13,6 +13,8 @@ API_option_private_key = "api_private_key"
 API_option_privatate_key_default = 'your-private-key-here'
 API_option_conversion_currency = 'conversion_currency'
 API_option_conversion_currency_default = 'AUD'
+API_option_conversion_currency_symbol = 'curreny_symbol'
+API_option_conversion_currency_symbol_default = '$'
 API_option_start_index = 'rank_start_index'
 API_option_start_index_default =  1
 API_option_end_index = 'rank_end_index'
@@ -102,3 +104,14 @@ status_file_all_time_section_name = 'All Time'
 
 status_file_last_failed_secion_name = 'Last Failed Call'
 
+# Data query information
+data_query_type = "query_type"
+data_query_type_price = "query_type_price"
+data_query_type_status = "query_type_status"
+data_query_tag = "query_tag"
+data_query_format = "output_format"
+data_query_format_stdout = "output_format_stdout"
+data_query_format_json = "output_format_json"
+data_query_detail = "output_detail"
+data_query_detail_short = "output_detail_short"
+data_query_detail_long = "output_detail_long"

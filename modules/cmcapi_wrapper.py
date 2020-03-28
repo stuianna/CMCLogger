@@ -149,6 +149,7 @@ class CMCAPI_Wrapper():
             try:
                 self.__getLatestStatus = jsonFields['status']
                 self.__checkGoodStatusKeys()
+                log.warning("Failed API request, Receved HTTP code {} from server".format(response.status_code))
             except KeyError:
                 self.__getLatestStatus = self.__makeCustomStatusError(1,"Internal error: Error parsing main dictionary keys from received response")
                 self.__getLatestData = None

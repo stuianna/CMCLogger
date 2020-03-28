@@ -1,0 +1,129 @@
+import unittest
+from unittest import mock
+import logging
+from modules.data_publisher import DataPublisher
+from modules.data_reader import DataReader
+from modules.DBOps.dbops import DBOps
+from modules.configChecker.configChecker import ConfigChecker
+import settings
+import json
+import datetime
+import time
+import os
+logging.disable(logging.CRITICAL)
+from CMCLogger import setStatusFileOptions, makeDirectoriesAsNeeded, setupDatabase, getConfigurationOptions
+
+requestFormat =  {
+        settings.data_query_type     : 'price',      # price , status
+        settings.data_query_tag      : 'BTC', # the tag, not valid for status
+        settings.data_query_format   : "stdout",
+        settings.data_query_detail   : "short",
+        }
+
+class CMCAPI_configuration_setting_and_checking(unittest.TestCase):
+
+    def test_check(self):
+        self.assertIs(False,False)
+
+    def test_getting_the_latest_price_single_tag_short_version_stdout(self):
+        request = dict(requestFormat)
+        request[settings.data_query_type] = settings.data_query_type_price
+        request[settings.data_query_tag] = "BTC"
+        request[settings.data_query_format] = settings.data_query_format_stdout
+        request[settings.data_query_detail] = settings.data_query_detail_short
+        output = self.reader.processRequest(request)
+        self.assertEqual(output,"BTC: $10857.98")
+
+    def test_getting_the_latest_price_single_tag_long_version_stdout(self):
+        request = dict(requestFormat)
+        request[settings.data_query_type] = settings.data_query_type_price
+        request[settings.data_query_tag] = "BTC"
+        request[settings.data_query_format] = settings.data_query_format_stdout
+        request[settings.data_query_detail] = settings.data_query_detail_long
+        output = self.reader.processRequest(request)
+        self.assertEqual(output,"BTC: $10857.98 1H: -0.39% 1D: -1.08% 7D: -1.23% 24h Volume: 58.38 Billion")
+
+    def test_getting_the_latest_price_single_tag_short_version_json(self):
+        request = dict(requestFormat)
+        request[settings.data_query_type] = settings.data_query_type_price
+        request[settings.data_query_tag] = "BTC"
+        request[settings.data_query_format] = settings.data_query_format_json
+        request[settings.data_query_detail] = settings.data_query_detail_short
+        output = self.reader.processRequest(request)
+        outputDict = {
+                settings.CMC_data_symbol : 'BTC',
+                settings.CMC_data_quote_price : '$10857.98'
+                }
+        expectedOutput = str(json.dumps(outputDict))
+        self.assertEqual(output,expectedOutput)
+
+    def test_getting_the_latest_price_single_tag_long_version_json(self):
+        request = dict(requestFormat)
+        request[settings.data_query_type] = settings.data_query_type_price
+        request[settings.data_query_tag] = "BTC"
+        request[settings.data_query_format] = settings.data_query_format_json
+        request[settings.data_query_detail] = settings.data_query_detail_long
+        output = self.reader.processRequest(request)
+        outputDict = {
+                settings.CMC_data_symbol : 'BTC',
+                settings.CMC_data_quote_price : '$10857.98',
+                settings.CMC_data_percent_change_1h : '-0.39%',
+                settings.CMC_data_percent_change_24h : '-1.08%',
+                settings.CMC_data_percent_change_7d : '-1.23%',
+                settings.CMC_data_quote_market_cap: '58.38 Billion'
+                }
+        expectedOutput = str(json.dumps(outputDict))
+        self.assertEqual(output,expectedOutput)
+
+    def test_query_not_existant_tag_recoves_with_simple_error_message(self):
+        request = dict(requestFormat)
+        request[settings.data_query_type] = settings.data_query_type_price
+        request[settings.data_query_tag] = "invalid tag"
+        request[settings.data_query_format] = settings.data_query_format_json
+        request[settings.data_query_detail] = settings.data_query_detail_long
+        output = self.reader.processRequest(request)
+        expectedOutput = "{} not a valid stored cryptocurreny symbol.".format(request[settings.data_query_tag])
+        self.assertEqual(output,expectedOutput)
+
+    def test_query_not_existant_price_format_recoves_with_simple_error_message_long_detail(self):
+        request = dict(requestFormat)
+        request[settings.data_query_type] = settings.data_query_type_price
+        request[settings.data_query_tag] = "BTC"
+        request[settings.data_query_format] = "Unknown format again"
+        request[settings.data_query_detail] = settings.data_query_detail_long
+        output = self.reader.processRequest(request)
+        expectedOutput = "{} is an invalid price request format".format(request[settings.data_query_format])
+        self.assertEqual(output,expectedOutput)
+
+    def test_query_not_existant_price_format_recoves_with_simple_error_message(self):
+        request = dict(requestFormat)
+        request[settings.data_query_type] = settings.data_query_type_price
+        request[settings.data_query_tag] = "BTC"
+        request[settings.data_query_format] = "Unknown format"
+        request[settings.data_query_detail] = settings.data_query_detail_short
+        output = self.reader.processRequest(request)
+        expectedOutput = "{} is an invalid price request format".format(request[settings.data_query_format])
+        self.assertEqual(output,expectedOutput)
+
+    def test_query_not_existant_output_type_recoves_with_simple_error_message(self):
+        request = dict(requestFormat)
+        request[settings.data_query_type] = settings.data_query_type_price
+        request[settings.data_query_tag] = "BTC"
+        request[settings.data_query_format] = settings.data_query_format_json
+        request[settings.data_query_detail] = "Unknown detail"
+        output = self.reader.processRequest(request)
+        expectedOutput = "{} is an invalid output detail request.".format(request[settings.data_query_detail])
+        self.assertEqual(output,expectedOutput)
+
+    def setUp(self):
+        self.workingDirectory = 'tests/mockData'
+        makeDirectoriesAsNeeded(self.workingDirectory)
+        self.status = ConfigChecker()
+        setStatusFileOptions(self.status,self.workingDirectory)
+        self.config = ConfigChecker()
+        getConfigurationOptions(self.config,self.workingDirectory)
+        self.database,created = setupDatabase(self.workingDirectory)
+        self.reader = DataReader(self.status,self.database,self.config)
+
+    def tearDown(self):
+        pass
