@@ -6,6 +6,7 @@ status_file_directory = data_file_directory
 log_file_name = "log"
 database_file_name = 'cryptoData.db'
 status_file_name = 'status.ini'
+appNameDirectory = 'CMCLogger'
 
 # Configuration file section and option names
 API_section_name = "CMC_API"

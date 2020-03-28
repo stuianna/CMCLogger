@@ -9,7 +9,7 @@ import datetime
 import time
 import os
 logging.disable(logging.CRITICAL)
-from CMCLogger import setStatusFileOptions, makeDirectoriesAsNeeded, setupDatabase
+from CMCLogger import CMCLogger
 
 badData = [{ # Has missing entry
     "circulating_supply": 4642367414,
@@ -128,9 +128,11 @@ class CMCAPI_configuration_setting_and_checking(unittest.TestCase):
 
     def setUp(self):
         self.workingDirectory = 'tests'
-        self.status = ConfigChecker()
-        makeDirectoriesAsNeeded(self.workingDirectory)
-        setStatusFileOptions(self.status,self.workingDirectory)
+        cmcLogger = CMCLogger(self.workingDirectory,logging.CRITICAL)
+        self.status = cmcLogger.getStatusFile()
+        #self.status = ConfigChecker()
+        #makeDirectoriesAsNeeded(self.workingDirectory)
+        #setStatusFileOptions(self.status,self.workingDirectory)
 
     def test_all_time_successful_calls_cannot_be_less_than_zero_reset_global_status(self):
         self.status.setValue(settings.status_file_all_time_section_name,settings.status_file_option_successful_calls,-1)
@@ -171,9 +173,8 @@ class CMCAPI_writing_status_files(unittest.TestCase):
 
     def setUp(self):
         self.workingDirectory = 'tests'
-        self.status = ConfigChecker()
-        makeDirectoriesAsNeeded(self.workingDirectory)
-        setStatusFileOptions(self.status,self.workingDirectory)
+        cmcLogger = CMCLogger(self.workingDirectory,logging.CRITICAL)
+        self.status = cmcLogger.getStatusFile()
         self.publisher = DataPublisher(self.status,None);
 
     def tearDown(self):
@@ -300,30 +301,18 @@ class CMCAPI_configuration_writeing_output_data(unittest.TestCase):
 
     def setUp(self):
         self.workingDirectory = 'tests'
-        self.status = ConfigChecker()
-        makeDirectoriesAsNeeded(self.workingDirectory)
-        setStatusFileOptions(self.status,self.workingDirectory)
-        self.database,created = setupDatabase(self.workingDirectory)
+        cmcLogger = CMCLogger(self.workingDirectory,logging.CRITICAL)
+        self.status = cmcLogger.getStatusFile()
+        self.database = cmcLogger.getDatabase()
         self.publisher = DataPublisher(self.status,self.database);
-
-    def test_database_file_is_created_ok(self):
-        self.workingDirectory = 'tests'
-        self.status = ConfigChecker()
-        makeDirectoriesAsNeeded(self.workingDirectory)
-        setStatusFileOptions(self.status,self.workingDirectory)
-        self.database,created = setupDatabase(self.workingDirectory)
-        self.publisher = DataPublisher(self.status,None);
-        self.assertIs(self.database.exists(),True)
-        self.assertIs(created,True)
 
     def test_database_file_is_not_created_with_no_permissions(self):
         self.workingDirectory = '/'
-        self.status = ConfigChecker()
-        makeDirectoriesAsNeeded(self.workingDirectory)
-        setStatusFileOptions(self.status,self.workingDirectory)
-        self.database,created = setupDatabase(self.workingDirectory)
-        self.publisher = DataPublisher(self.status,None);
-        self.assertIs(self.database,None)
+        try:
+            cmcLogger = CMCLogger(self.workingDirectory,logging.CRITICAL)
+            created = True
+        except:
+            created = False
         self.assertIs(created,False)
 
     def test_database_is_created_if_not_exist_at_runtime(self):

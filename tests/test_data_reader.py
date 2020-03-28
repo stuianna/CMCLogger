@@ -12,7 +12,7 @@ import datetime
 import time
 import os
 logging.disable(logging.CRITICAL)
-from CMCLogger import setStatusFileOptions, makeDirectoriesAsNeeded, setupDatabase, getConfigurationOptions
+from CMCLogger import CMCLogger
 from dateutil import parser,tz
 
 requestFormat =  {
@@ -209,12 +209,10 @@ class CMCAPI_configuration_setting_and_checking(unittest.TestCase):
 
     def setUp(self):
         self.workingDirectory = 'tests/mockData'
-        makeDirectoriesAsNeeded(self.workingDirectory)
-        self.status = ConfigChecker()
-        setStatusFileOptions(self.status,self.workingDirectory)
-        self.config = ConfigChecker()
-        getConfigurationOptions(self.config,self.workingDirectory)
-        self.database,created = setupDatabase(self.workingDirectory)
+        cmcLogger = CMCLogger(self.workingDirectory,logging.CRITICAL)
+        self.status = cmcLogger.getStatusFile()
+        self.config = cmcLogger.getConfigFile()
+        self.database = cmcLogger.getDatabase()
         self.reader = DataReader(self.status,self.database,self.config)
 
     def tearDown(self):

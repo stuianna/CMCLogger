@@ -41,9 +41,12 @@ class CMCAPI_Wrapper():
     def getLatestData(self):
         return self.__getLatestData
 
-    def __configureGetLatestSession(self):
+    def __configureGetLatestSession(self,apiKey = None):
         getLatestHeaders = settings.getLatest_Headers
-        getLatestHeaders['X-CMC_PRO_API_KEY'] = self.__configuration['privateKey']
+        if apiKey is None:
+            getLatestHeaders['X-CMC_PRO_API_KEY'] = self.__configuration['privateKey']
+        else:
+            getLatestHeaders['X-CMC_PRO_API_KEY'] = apiKey
         self.__getLatestSession.headers.update(getLatestHeaders)
         log.debug("Setting getLatest session headers to {}".format(getLatestHeaders))
 
@@ -74,7 +77,10 @@ class CMCAPI_Wrapper():
     def getConfiguration(self):
         return self.__configuration;
 
-    def getLatest(self):
+    def getLatest(self,apiKey = None):
+
+        if apiKey is not None:
+            self.__configureGetLatestSession(apiKey)
 
         self.__lastCallTimestamp = int(datetime.datetime.now().timestamp())
         successfullRequest,response = self.__getAPIResponse()
