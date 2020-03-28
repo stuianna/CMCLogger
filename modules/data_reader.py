@@ -1,5 +1,7 @@
 from modules.DBOps.dbops import DBOps
 from modules.configChecker.configChecker import ConfigChecker
+from dateutil import parser,tz
+from io import StringIO
 import settings
 import logging
 import json
@@ -23,13 +25,68 @@ class DataReader():
     def getStatusFile(self):
         return self.__statusFile
 
-    def getDatabase(self):
-        return self.__database
-
     def processRequest(self,request):
         log.info("Processing data request {}".format(request))
         if request[settings.data_query_type] == settings.data_query_type_price:
             return self.__processPriceRequest(request)
+        elif request[settings.data_query_type] == settings.data_query_type_status:
+            return self.__processStatusRequest(request)
+        else:
+            log.warning("Request with type {} is not valid".format(request[settings.data_query_type]))
+            return "Request with type {} is not valid".format(request[settings.data_query_type])
+
+    def __processStatusRequest(self,request):
+        if request[settings.data_query_format] == settings.data_query_format_stdout:
+            return self.__processStatusStdout(request)
+        elif request[settings.data_query_format] == settings.data_query_format_json:
+            return self.__processStatusJson(request)
+        else:
+            log.warning("Request with data format {} is not valid".format(request[settings.data_query_format]))
+            return "Request with data format {} is not valid".format(request[settings.data_query_format])
+
+    def __processStatusJson(self,request):
+        if request[settings.data_query_detail] == settings.data_query_detail_short:
+            return self.__shortStatusJson(request)
+        elif request[settings.data_query_detail] == settings.data_query_detail_long:
+            return self.__longStatusJson(request)
+        else:
+            log.warning("JSON status request with detail {} not valid".format(request[settings.data_query_detail]))
+            return "JSON status request with detail {} not valid".format(request[settings.data_query_detail])
+
+    def __processStatusStdout(self,request):
+        if request[settings.data_query_detail] == settings.data_query_detail_short:
+            return self.__shortStatusStdout(request)
+        elif request[settings.data_query_detail] == settings.data_query_detail_long:
+            return self.__longStatusStdout(request)
+        else:
+            log.warning("STDOUT status request with detail {} not valid".format(request[settings.data_query_detail]))
+            return "STDOUT status request with detail {} not valid".format(request[settings.data_query_detail])
+
+    def __longStatusStdout(self,request):
+        results = StringIO()
+        self.__statusFile.getConfigParserObject().write(results)
+        return results.getvalue()
+
+    def __longStatusJson(self,request):
+        return  json.dumps(self.__statusFile.getConfigParserObject()._sections)
+
+    def __shortStatusStdout(self,request):
+        minutes = self.__calculateMinutesSinceLastCall()
+        return "Last successful call {} minutes ago, health {}%.".format(minutes,
+                self.__statusFile.getValue(settings.status_file_current_session_section_name,settings.status_file_option_health))
+
+    def __shortStatusJson(self,request):
+        minutes = self.__calculateMinutesSinceLastCall()
+        health = self.__statusFile.getValue(settings.status_file_current_session_section_name,settings.status_file_option_health)
+        output = dict({settings.output_json_last_call : minutes, settings.output_json_health : health})
+        return json.dumps(output)
+
+    def __calculateMinutesSinceLastCall(self):
+        lastCall = int((parser.parse(self.__statusFile.getValue(
+            settings.status_file_last_call_section_name,
+            settings.status_file_option_timeStamp)).strftime('%s')))
+        currentTime = int(time.time());
+        return int((currentTime - lastCall) / 60)
 
     def __processPriceRequest(self,request):
         entry = self.__database.getLastTimeEntry(request[settings.data_query_tag])

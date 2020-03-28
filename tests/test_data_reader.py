@@ -1,6 +1,7 @@
 import unittest
 from unittest import mock
 import logging
+from io import StringIO
 from modules.data_publisher import DataPublisher
 from modules.data_reader import DataReader
 from modules.DBOps.dbops import DBOps
@@ -12,6 +13,7 @@ import time
 import os
 logging.disable(logging.CRITICAL)
 from CMCLogger import setStatusFileOptions, makeDirectoriesAsNeeded, setupDatabase, getConfigurationOptions
+from dateutil import parser,tz
 
 requestFormat =  {
         settings.data_query_type     : 'price',      # price , status
@@ -24,6 +26,87 @@ class CMCAPI_configuration_setting_and_checking(unittest.TestCase):
 
     def test_check(self):
         self.assertIs(False,False)
+
+    def test_request_infomation_with_invalid_request_type(self):
+        request = dict(requestFormat)
+        request[settings.data_query_type] = "Invalid type",
+        request[settings.data_query_tag] = "BTC"
+        request[settings.data_query_format] = settings.data_query_format_stdout
+        request[settings.data_query_detail] = settings.data_query_detail_short
+        output = self.reader.processRequest(request)
+        self.assertEqual("Request with type {} is not valid".format(request[settings.data_query_type]),output)
+
+    def test_request_infomation_with_invalid_data_format(self):
+        request = dict(requestFormat)
+        request[settings.data_query_type] = settings.data_query_type_status
+        request[settings.data_query_tag] = "BTC"
+        request[settings.data_query_format] = "bad data format"
+        request[settings.data_query_detail] = settings.data_query_detail_short
+        output = self.reader.processRequest(request)
+        self.assertEqual("Request with data format {} is not valid".format(request[settings.data_query_format]),output)
+
+    def test_getting_the_status_short_version_stdout(self):
+        request = dict(requestFormat)
+        request[settings.data_query_type] = settings.data_query_type_status
+        request[settings.data_query_tag] = "not used"
+        request[settings.data_query_format] = settings.data_query_format_stdout
+        request[settings.data_query_detail] = settings.data_query_detail_short
+        output = self.reader.processRequest(request)
+        currentTime = int(time.time())
+        lastCall = int((parser.parse(self.reader.getStatusFile().getValue(
+            settings.status_file_last_call_section_name,
+            settings.status_file_option_timeStamp)).strftime('%s')))
+        minutes = (currentTime - lastCall) / (60)
+        self.assertEqual(output,"Last successful call {} minutes ago, health 80.0%.".format(int(minutes)))
+
+    def test_getting_the_status_long_version_stdout(self):
+        request = dict(requestFormat)
+        request[settings.data_query_type] = settings.data_query_type_status
+        request[settings.data_query_tag] = "not used"
+        request[settings.data_query_format] = settings.data_query_format_stdout
+        request[settings.data_query_detail] = settings.data_query_detail_long
+        output = self.reader.processRequest(request)
+        expected = StringIO()
+        self.status.getConfigParserObject().write(expected)
+        self.assertEqual(expected.getvalue(),output)
+
+    def test_getting_the_status_short_version_json_bad_output_detail(self):
+        request = dict(requestFormat)
+        request[settings.data_query_type] = settings.data_query_type_status
+        request[settings.data_query_tag] = "not used"
+        request[settings.data_query_format] = settings.data_query_format_json
+        request[settings.data_query_detail] = "invalid option"
+        output = self.reader.processRequest(request)
+        self.assertEqual("JSON status request with detail {} not valid".format(request[settings.data_query_detail]),output)
+
+    def test_getting_the_status_short_version_json(self):
+        request = dict(requestFormat)
+        request[settings.data_query_type] = settings.data_query_type_status
+        request[settings.data_query_tag] = "not used"
+        request[settings.data_query_format] = settings.data_query_format_json
+        request[settings.data_query_detail] = settings.data_query_detail_short
+        output = self.reader.processRequest(request)
+        currentTime = int(time.time())
+        lastCall = int((parser.parse(self.reader.getStatusFile().getValue(
+            settings.status_file_last_call_section_name,
+            settings.status_file_option_timeStamp)).strftime('%s')))
+        minutes = (currentTime - lastCall) / (60)
+        expected = {
+                settings.output_json_last_call  : int(minutes),
+                settings.output_json_health     : 80.0
+                }
+        expectedJson = json.dumps(expected)
+        self.assertEqual(expectedJson,output)
+
+    def test_getting_the_status_long_version_json(self):
+        request = dict(requestFormat)
+        request[settings.data_query_type] = settings.data_query_type_status
+        request[settings.data_query_tag] = "not used"
+        request[settings.data_query_format] = settings.data_query_format_json
+        request[settings.data_query_detail] = settings.data_query_detail_long
+        output = self.reader.processRequest(request)
+        expected = json.dumps(self.status.getConfigParserObject()._sections)
+        self.assertEqual(expected,output)
 
     def test_getting_the_latest_price_single_tag_short_version_stdout(self):
         request = dict(requestFormat)
@@ -42,6 +125,15 @@ class CMCAPI_configuration_setting_and_checking(unittest.TestCase):
         request[settings.data_query_detail] = settings.data_query_detail_long
         output = self.reader.processRequest(request)
         self.assertEqual(output,"BTC: $10857.98 1H: -0.39% 1D: -1.08% 7D: -1.23% 24h Volume: 58.38 Billion")
+
+    def test_getting_the_status_short_version_stdout_bad_output_detail(self):
+        request = dict(requestFormat)
+        request[settings.data_query_type] = settings.data_query_type_status
+        request[settings.data_query_tag] = "not used"
+        request[settings.data_query_format] = settings.data_query_format_stdout
+        request[settings.data_query_detail] = "invalid option"
+        output = self.reader.processRequest(request)
+        self.assertEqual("STDOUT status request with detail {} not valid".format(request[settings.data_query_detail]),output)
 
     def test_getting_the_latest_price_single_tag_short_version_json(self):
         request = dict(requestFormat)

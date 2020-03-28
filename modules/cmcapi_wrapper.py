@@ -182,7 +182,7 @@ class CMCAPI_Wrapper():
                 dummy = self.getLatestData()[i][settings.CMC_data_quote][self.__configuration['conversionCurrency']][settings.CMC_data_percent_change_24h]
                 dummy = self.getLatestData()[i][settings.CMC_data_quote][self.__configuration['conversionCurrency']][settings.CMC_data_percent_change_7d]
                 dummy = self.getLatestData()[i][settings.CMC_data_quote][self.__configuration['conversionCurrency']][settings.CMC_data_last_updated]
-            log.debug("Successful API call returned {} crypto entries".format(len(self.getLatestData())))
+            log.info("Successful API call returned {} crypto entries".format(len(self.getLatestData())))
         except KeyError:
             self.__getLatestStatus = self.__makeCustomStatusError(7,"Internal error: Error parsing API received data keys")
             self.__getLatestData = None

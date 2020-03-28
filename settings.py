@@ -26,6 +26,10 @@ general_section_name = "General"
 general_option_status_file_format = 'status_file_format'
 general_option_status_file_format_default = 'ini'
 
+# Data output json infomration
+output_json_last_call = "last_call"
+output_json_health = "health"
+
 # Coinmarketcap API information
 getLatest_Url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
 getLatest_Parameters = {
@@ -94,6 +98,7 @@ status_file_option_error_code = CMC_status_error_code
 status_file_option_error_message = CMC_status_error_message
 status_file_option_elapsed = CMC_status_elapsed
 status_file_option_credit_count = CMC_status_credit_count
+status_file_option_health = "health"
 
 status_file_current_session_section_name = 'Current Session'
 status_file_option_successful_calls = 'successful_calls'

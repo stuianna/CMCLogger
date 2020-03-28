@@ -26,7 +26,7 @@ def setupDatabase(workingDirectory):
         return None,False
     return database,True
 
-def setStatusFileOptions(status,workingDirectory):
+def setStatusFileOptions(status,workingDirectory,newSession=True):
 
     status.setExpectation(
             settings.status_file_last_call_section_name,
@@ -78,6 +78,11 @@ def setStatusFileOptions(status,workingDirectory):
             settings.status_file_option_credit_count,
             int,
             0)
+    status.setExpectation(
+            settings.status_file_current_session_section_name,
+            settings.status_file_option_health,
+            float,
+            100.0)
     status.setExpectation(
             settings.status_file_current_session_section_name,
             settings.status_file_option_successful_calls,
@@ -112,10 +117,11 @@ def setStatusFileOptions(status,workingDirectory):
     fileLocation = os.path.join(workingDirectory,settings.status_file_directory, settings.status_file_name)
     status.setConfigurationFile(fileLocation)
 
-    ## Reset the current session values to zero
-    status.setValue(settings.status_file_current_session_section_name,settings.status_file_option_successful_calls,0)
-    status.setValue(settings.status_file_current_session_section_name,settings.status_file_option_failed_calls,0)
-    status.setValue(settings.status_file_current_session_section_name,settings.status_file_option_success_rate,100.0)
+    if newSession is True:
+        ## Reset the current session values to zero
+        status.setValue(settings.status_file_current_session_section_name,settings.status_file_option_successful_calls,0)
+        status.setValue(settings.status_file_current_session_section_name,settings.status_file_option_failed_calls,0)
+        status.setValue(settings.status_file_current_session_section_name,settings.status_file_option_success_rate,100.0)
 
     return status.writeConfigurationFile(fileLocation)
 
@@ -184,7 +190,7 @@ def getConfigurationOptions(config,workingDirectory):
 
     fileLocation = os.path.join(workingDirectory, settings.input_configuation_filename)
     config.setConfigurationFile(fileLocation)
-    return config.writeConfigurationFile(settings.input_configuation_filename)
+    return config.writeConfigurationFile(fileLocation)
 
 
 def daemonAlreadyRunning():
@@ -217,6 +223,11 @@ if __name__ == '__main__':
         # Help
         # version
 
+    if len(sys.argv) > 1:
+        dataRequest = True
+    else:
+        dataRequest = False
+
     # Setup logging and settings
     workingDirectory = os.path.dirname(__file__)
     loggingFile = os.path.join(workingDirectory,settings.log_file_directory,settings.log_file_name)
@@ -228,7 +239,7 @@ if __name__ == '__main__':
 
     # Setup output streams
     status = ConfigChecker()
-    if not setStatusFileOptions(status,workingDirectory):
+    if not setStatusFileOptions(status,workingDirectory,not dataRequest):
         log.error("Failed to create required status file, exiting")
         sys.exit()
 
@@ -242,6 +253,21 @@ if __name__ == '__main__':
     if not success:
         log.error("Failed to create required database file, exiting")
         sys.exit()
+
+    if dataRequest:
+        request = dict()
+        request[settings.data_query_type] = settings.data_query_type_price
+        request[settings.data_query_tag] = sys.argv[1]
+        request[settings.data_query_format] = settings.data_query_format_stdout
+        request[settings.data_query_detail] = settings.data_query_detail_long
+    else:
+        dataRequest = False
+
+    if dataRequest is True:
+        reader = DataReader(status,database,config)
+        output = reader.processRequest(request)
+        print(output)
+        sys.exit();
 
     # Check if process already running
     if daemonAlreadyRunning():
