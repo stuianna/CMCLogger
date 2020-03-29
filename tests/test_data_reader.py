@@ -115,7 +115,7 @@ class CMCAPI_configuration_setting_and_checking(unittest.TestCase):
         request[settings.data_query_format] = settings.data_query_format_stdout
         request[settings.data_query_detail] = settings.data_query_detail_short
         output = self.reader.processRequest(request)
-        self.assertEqual(output,"BTC: $10857.98")
+        self.assertEqual(output,"BTC: $10857.98 (-1.08%)")
 
     def test_getting_the_latest_price_single_tag_long_version_stdout(self):
         request = dict(requestFormat)
@@ -145,6 +145,7 @@ class CMCAPI_configuration_setting_and_checking(unittest.TestCase):
         outputDict = {
                 settings.CMC_data_symbol : 'BTC',
                 settings.CMC_data_quote_price : '$10857.98'
+                settings.CMC_data_percent_change_24h : '-1.08%'
                 }
         expectedOutput = str(json.dumps(outputDict))
         self.assertEqual(output,expectedOutput)
