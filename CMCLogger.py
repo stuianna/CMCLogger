@@ -1,8 +1,9 @@
 #!/bin/python3
 
-import time
 import sys
 import os
+sys.path.append(os.path.dirname(__file__))
+import time
 import socket
 import settings
 import logging
@@ -68,6 +69,10 @@ class CMCLogger():
         if goodResponse is True:
             self.__publisher.writeData(self.__api.getLatestData())
         return goodResponse
+
+    def writeCustomStatus(self,status):
+        self.__createAPIandPublisher()
+        self.__publisher.writeStatus(status)
 
     def dataRequest(self,request):
         reader = DataReader(self.__status,self.__database,self.__config)
