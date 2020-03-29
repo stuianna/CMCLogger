@@ -144,7 +144,7 @@ class CMCAPI_configuration_setting_and_checking(unittest.TestCase):
         output = self.reader.processRequest(request)
         outputDict = {
                 settings.CMC_data_symbol : 'BTC',
-                settings.CMC_data_quote_price : '$10857.98'
+                settings.CMC_data_quote_price : '$10857.98',
                 settings.CMC_data_percent_change_24h : '-1.08%'
                 }
         expectedOutput = str(json.dumps(outputDict))
