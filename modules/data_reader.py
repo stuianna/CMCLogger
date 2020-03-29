@@ -126,14 +126,14 @@ class DataReader():
             self.__getListAndRoundValue(entry,12) + \
             " (" +  \
             self.__getListAndRoundValue(entry,10) + \
-            " %)"
+            "%)"
 
     def __shortPriceJson(self,entry):
         symbol = self.__config.getValue(settings.API_section_name,settings.API_option_conversion_currency_symbol)
         outputDict = {
                 settings.CMC_data_symbol : str(entry[14]),
                 settings.CMC_data_quote_price : symbol + self.__getListAndRoundValue(entry,12),
-                settings.CMC_data_percent_change_24h : self.__getListAndRoundValue(entry,10)
+                settings.CMC_data_percent_change_24h : self.__getListAndRoundValue(entry,10) + '%'
                 }
         return str(json.dumps(outputDict))
 
