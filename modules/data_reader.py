@@ -123,13 +123,13 @@ class DataReader():
         return str(entry[14]) + \
             ": " + \
             self.__config.getValue(settings.API_section_name,settings.API_option_conversion_currency_symbol) + \
-            str(round(entry[12],2))
+            self.__getListAndRoundValue(entry,12)
 
     def __shortPriceJson(self,entry):
         symbol = self.__config.getValue(settings.API_section_name,settings.API_option_conversion_currency_symbol)
         outputDict = {
                 settings.CMC_data_symbol : str(entry[14]),
-                settings.CMC_data_quote_price : symbol + str(round(entry[12],2))
+                settings.CMC_data_quote_price : symbol + self.__getListAndRoundValue(entry,12)
                 }
         return str(json.dumps(outputDict))
 
@@ -137,10 +137,10 @@ class DataReader():
         symbol = self.__config.getValue(settings.API_section_name,settings.API_option_conversion_currency_symbol)
         outputDict = {
                 settings.CMC_data_symbol : str(entry[14]),
-                settings.CMC_data_quote_price : symbol + str(round(entry[12],2)),
-                settings.CMC_data_percent_change_1h : str(round(entry[9],2)) + "%",
-                settings.CMC_data_percent_change_24h : str(round(entry[10],2)) + "%",
-                settings.CMC_data_percent_change_7d : str(round(entry[11],2)) + "%",
+                settings.CMC_data_quote_price : symbol + self.__getListAndRoundValue(entry,12),
+                settings.CMC_data_percent_change_1h : self.__getListAndRoundValue(entry,9) + "%",
+                settings.CMC_data_percent_change_24h : self.__getListAndRoundValue(entry,10) + "%",
+                settings.CMC_data_percent_change_7d : self.__getListAndRoundValue(entry,11) + "%",
                 settings.CMC_data_quote_market_cap : self.__currencyToNiceFormat(entry)
                 }
         return str(json.dumps(outputDict))
@@ -149,15 +149,22 @@ class DataReader():
         return str(entry[14]) + \
             ": " + \
             self.__config.getValue(settings.API_section_name,settings.API_option_conversion_currency_symbol) + \
-            str(round(entry[12],2)) + \
+            self.__getListAndRoundValue(entry,12)+ \
             ' 1H: ' + \
-            str(round(entry[9],2)) + \
+            self.__getListAndRoundValue(entry,9)+ \
             '% 1D: ' + \
-            str(round(entry[10],2)) + \
+            self.__getListAndRoundValue(entry,10)+ \
             '% 7D: ' + \
-            str(round(entry[11],2)) + \
+            self.__getListAndRoundValue(entry,11)+ \
             '% 24h Volume: ' + \
             self.__currencyToNiceFormat(entry)
+
+    def __getListAndRoundValue(self,entry,index):
+        try:
+            value = round(entry[index],2)
+            return str(value)
+        except:
+            return "NULL"
 
     def __currencyToNiceFormat(self,entry):
         n = float(entry[17])
