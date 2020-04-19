@@ -4,7 +4,6 @@ source = .
 omit =
     tests/*
     modules/configChecker*
-    modules/DBOps/**
 		modules/__init__.py
 		modules/configChecker/__init__.py
 		coinMarketCap/*

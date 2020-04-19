@@ -2,7 +2,6 @@ import settings
 import logging
 import time
 from dateutil import parser,tz
-from modules.DBOps.dbops import DBOps
 
 allowedDataFormats = ['ini']
 log = logging.getLogger(__name__)
@@ -103,22 +102,16 @@ class DataPublisher():
             self.__createTablesAsNeeded(dataCopy)
             self.__createTimestamp(dataCopy)
             self.__convertTimeEntries(dataCopy)
-            dataList = self.__convertToSortedList(dataCopy)
-            self.__addToDatabase(dataCopy,dataList)
+            # dataList = self.__convertToSortedList(dataCopy)
+            self.__addToDatabase(dataCopy)
             log.debug("Adding a new entry in database for coin '{}'".format(dataCopy[settings.CMC_data_symbol]))
         log.info("Added {} new entries to the database".format(len(data)))
 
-    def __addToDatabase(self,dataCopy,dataList):
+    def __addToDatabase(self,dataCopy):
          try:
-            self.__database.append(dataCopy[settings.CMC_data_symbol],dataList)
+            self.__database.insert(dataCopy[settings.CMC_data_symbol],dataCopy)
          except Exception as e:
-             log.error("Error adding coin '{}' to database, DBOps error {}".format(dataCopy[settings.CMC_data_symbol],e))
-
-    def __convertToSortedList(self,entry):
-        dataList = []
-        for item in  sorted(entry.keys()):
-            dataList.append(entry[item])
-        return dataList
+             log.error("Error adding coin '{}' to database, SQHelper error {}".format(dataCopy[settings.CMC_data_symbol],e))
 
     def __convertTimeEntries(self,entry):
         entry[settings.CMC_data_data_added] = self.__convertISO860toUnixTime(entry[settings.CMC_data_data_added])
@@ -148,41 +141,31 @@ class DataPublisher():
     def __createDataBaseIfNotExist(self):
         if not self.__database.exists():
             log.error("Target database didn't exist at runtime, creating a new database")
-            self.__database.createDatabase()
+            self.__database.create_database()
 
     def __createTablesAsNeeded(self,entry):
-        ## TODO can check if table actually existed to save making the columns every time.
-        self.__database.createTableIfNotExist(entry[settings.CMC_data_symbol],self.__makeDataBaseTableColumns())
+        if entry[settings.CMC_data_symbol] not in self.__database.get_table_names():
+            self.__database.create_table(entry[settings.CMC_data_symbol],self.__makeDataBaseTableColumns())
 
     def __makeDataBaseTableColumns(self):
-        columns = ''
-        columns = columns + self.__columnEntry('timestamp','INTEGER')
-        columns = columns + self.__columnEntry(settings.CMC_data_circulating_suuply,settings.CMC_data_circulating_suuply_type)
-        columns = columns + self.__columnEntry(settings.CMC_data_cmc_rank,settings.CMC_data_cmc_rank_type)
-        columns = columns + self.__columnEntry(settings.CMC_data_data_added,settings.CMC_data_data_added_type)
-        columns = columns + self.__columnEntry(settings.CMC_data_id,settings.CMC_data_id_type)
-        columns = columns + self.__columnEntry(settings.CMC_data_last_updated,settings.CMC_data_last_updated_type)
-        columns = columns + self.__columnEntry(settings.CMC_data_max_supply,settings.CMC_data_max_supply_type)
-        columns = columns + self.__columnEntry(settings.CMC_data_name,settings.CMC_data_name_type)
-        columns = columns + self.__columnEntry(settings.CMC_data_quote_market_cap,settings.CMC_data_quote_market_cap_type)
-        columns = columns + self.__columnEntry(settings.CMC_data_num_market_pairs,settings.CMC_data_num_market_pairs_type)
-        columns = columns + self.__columnEntry(settings.CMC_data_percent_change_1h,settings.CMC_data_percent_change_1h_type)
-        columns = columns + self.__columnEntry(settings.CMC_data_percent_change_7d,settings.CMC_data_percent_change_7d_type)
-        columns = columns + self.__columnEntry(settings.CMC_data_percent_change_24h,settings.CMC_data_percent_change_24h_type)
-        columns = columns + self.__columnEntry(settings.CMC_data_quote_price,settings.CMC_data_quote_price_type)
-        columns = columns + self.__columnEntry(settings.CMC_data_slug,settings.CMC_data_slug_type)
-        columns = columns + self.__columnEntry(settings.CMC_data_symbol,settings.CMC_data_symbol_type)
-        columns = columns + self.__columnEntry(settings.CMC_data_total_supply,settings.CMC_data_total_supply_type)
-        columns = columns + self.__columnEntry(settings.CMC_data_quote_volume_24h,settings.CMC_data_quote_volume_24h_type)
-        columns = columns[0:-1]
-        columns = self.__sortColumnNames(columns)
+
+        columns = dict()
+        columns['timestamp'] = 'INTEGER'
+        columns[settings.CMC_data_circulating_suuply] = settings.CMC_data_circulating_suuply_type
+        columns[settings.CMC_data_cmc_rank] = settings.CMC_data_cmc_rank_type
+        columns[settings.CMC_data_data_added] = settings.CMC_data_data_added_type
+        columns[settings.CMC_data_id] = settings.CMC_data_id_type
+        columns[settings.CMC_data_last_updated] = settings.CMC_data_last_updated_type
+        columns[settings.CMC_data_max_supply] = settings.CMC_data_max_supply_type
+        columns[settings.CMC_data_name] = settings.CMC_data_name_type
+        columns[settings.CMC_data_quote_market_cap] = settings.CMC_data_quote_market_cap_type
+        columns[settings.CMC_data_num_market_pairs] = settings.CMC_data_num_market_pairs_type
+        columns[settings.CMC_data_percent_change_1h] = settings.CMC_data_percent_change_1h_type
+        columns[settings.CMC_data_percent_change_7d] = settings.CMC_data_percent_change_7d_type
+        columns[settings.CMC_data_percent_change_24h] = settings.CMC_data_percent_change_24h_type
+        columns[settings.CMC_data_quote_price] = settings.CMC_data_quote_price_type
+        columns[settings.CMC_data_slug] = settings.CMC_data_slug_type
+        columns[settings.CMC_data_symbol] = settings.CMC_data_symbol_type
+        columns[settings.CMC_data_total_supply] = settings.CMC_data_total_supply_type
+        columns[settings.CMC_data_quote_volume_24h] = settings.CMC_data_quote_volume_24h_type
         return columns
-
-    def __sortColumnNames(self,columns):
-        arr = columns.split(',')
-        arr = sorted(arr)
-        return ','.join(arr)
-
-    def __columnEntry(self,name,dataType):
-        return ' ' +name + ' ' + dataType + ','
-

@@ -13,7 +13,7 @@ from datetime import datetime
 from modules.cmcapi_wrapper import CMCAPI_Wrapper
 from modules.configChecker.configChecker import ConfigChecker
 from modules.data_publisher import DataPublisher
-from modules.DBOps.dbops import DBOps
+from dbops.sqhelper import SQHelper
 from modules.data_reader import DataReader
 import appdirs
 import multiprocessing
@@ -170,7 +170,7 @@ class CMCLogger():
 
     def __setupDatabase(self):
         fileLocation = os.path.join(self.__workingDirectory,settings.data_file_directory,settings.database_file_name)
-        database = DBOps(fileLocation)
+        database = SQHelper(fileLocation)
         if not database.exists():
             log.critical("Failed to create required database file, exiting")
             raise

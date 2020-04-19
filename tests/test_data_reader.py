@@ -4,7 +4,6 @@ import logging
 from io import StringIO
 from modules.data_publisher import DataPublisher
 from modules.data_reader import DataReader
-from modules.DBOps.dbops import DBOps
 from modules.configChecker.configChecker import ConfigChecker
 import settings
 import json

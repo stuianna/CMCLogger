@@ -328,8 +328,8 @@ class CMCAPI_configuration_writeing_output_data(unittest.TestCase):
 
     def test_database_creates_tabels_as_needed(self):
         self.publisher.writeData(goodData)
-        tables = self.database.getTableNames()
-        columns = self.database.getColumnNames('BCH')
+        tables = self.database.get_table_names()
+        columns = self.database.get_column_names('BCH')
         self.assertIs(len(tables),2)
         self.assertIn('BCH',tables)
         self.assertIn('USDT',tables)
@@ -337,24 +337,24 @@ class CMCAPI_configuration_writeing_output_data(unittest.TestCase):
 
     def test_database_entry_added_successfully(self):
         self.publisher.writeData(goodData)
-        lastEntry = self.database.getLastTimeEntry('BCH')
-        columns = self.database.getColumnNames('BCH')
-        writtenData = lastEntry[0]
-        self.assertEqual(writtenData[0],18350387.5)
-        self.assertEqual(writtenData[1],5)
-        self.assertEqual(writtenData[7],'Bitcoin Cash')
-        self.assertEqual(writtenData[8],457)
-        self.assertEqual(writtenData[14],'BCH')
+        lastEntry = self.database.get_last_time_entry('BCH')
+        columns = self.database.get_column_names('BCH')
+        self.assertEqual(lastEntry[settings.CMC_data_circulating_suuply],18350387.5)
+        self.assertEqual(lastEntry[settings.CMC_data_cmc_rank],5)
+        self.assertEqual(lastEntry[settings.CMC_data_name],'Bitcoin Cash')
+        self.assertEqual(lastEntry[settings.CMC_data_num_market_pairs],457)
+        self.assertEqual(lastEntry[settings.CMC_data_symbol],'BCH')
+
 
     def test_multiple_good_entries_are_written(self):
         self.publisher.writeData(goodData)
         self.publisher.writeData(goodData)
-        df = self.database.table2Df('USDT')
+        df = self.database.table_to_df('USDT')
         self.assertIs(len(df), 2)
 
     def test_bad_data_results_in_no_entry_being_written(self):
         self.publisher.writeData(badData)
-        df = self.database.table2Df('USDT')
+        df = self.database.table_to_df('USDT')
         self.assertIs(len(df), 0)
 
     def tearDown(self):

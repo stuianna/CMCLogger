@@ -1,4 +1,3 @@
-from modules.DBOps.dbops import DBOps
 from modules.configChecker.configChecker import ConfigChecker
 from dateutil import parser,tz
 from io import StringIO
@@ -89,14 +88,14 @@ class DataReader():
         return int((currentTime - lastCall) / 60)
 
     def __processPriceRequest(self,request):
-        entry = self.__database.getLastTimeEntry(request[settings.data_query_tag])
+        entry = self.__database.get_last_time_entry(request[settings.data_query_tag])
         if entry is None:
             log.error("Cannot request symbol {} from database, as it does not exist.".format(request[settings.data_query_tag]))
             return "{} not a valid stored cryptocurreny symbol.".format(request[settings.data_query_tag])
         if request[settings.data_query_detail] == settings.data_query_detail_short:
-            return self.__processShortPriceRequest(entry[0],request)
+            return self.__processShortPriceRequest(entry,request)
         elif request[settings.data_query_detail] == settings.data_query_detail_long:
-            return self.__processLongPriceRequest(entry[0],request)
+            return self.__processLongPriceRequest(entry,request)
         else:
             log.warning("Price request detail '{}' not found".format(request[settings.data_query_detail]))
             return '{} is an invalid output detail request.'.format(request[settings.data_query_detail])
@@ -120,58 +119,58 @@ class DataReader():
             return "{} is an invalid price request format".format(request[settings.data_query_format])
 
     def __shortPriceStdout(self,entry):
-        return str(entry[14]) + \
+        return str(entry[settings.CMC_data_symbol]) + \
             ": " + \
             self.__config.getValue(settings.API_section_name,settings.API_option_conversion_currency_symbol) + \
-            self.__getListAndRoundValue(entry,12) + \
+            self.__getKeyAndRoundValue(entry,settings.CMC_data_quote_price) + \
             " (" +  \
-            self.__getListAndRoundValue(entry,10) + \
+            self.__getKeyAndRoundValue(entry,settings.CMC_data_percent_change_24h) + \
             "%)"
 
     def __shortPriceJson(self,entry):
         symbol = self.__config.getValue(settings.API_section_name,settings.API_option_conversion_currency_symbol)
         outputDict = {
-                settings.CMC_data_symbol : str(entry[14]),
-                settings.CMC_data_quote_price : symbol + self.__getListAndRoundValue(entry,12),
-                settings.CMC_data_percent_change_24h : self.__getListAndRoundValue(entry,10) + '%'
+                settings.CMC_data_symbol : str(entry[settings.CMC_data_symbol]),
+                settings.CMC_data_quote_price : symbol + self.__getKeyAndRoundValue(entry,settings.CMC_data_quote_price),
+                settings.CMC_data_percent_change_24h : self.__getKeyAndRoundValue(entry,settings.CMC_data_percent_change_24h) + '%'
                 }
         return str(json.dumps(outputDict))
 
     def __longPriceJson(self,entry):
         symbol = self.__config.getValue(settings.API_section_name,settings.API_option_conversion_currency_symbol)
         outputDict = {
-                settings.CMC_data_symbol : str(entry[14]),
-                settings.CMC_data_quote_price : symbol + self.__getListAndRoundValue(entry,12),
-                settings.CMC_data_percent_change_1h : self.__getListAndRoundValue(entry,9) + "%",
-                settings.CMC_data_percent_change_24h : self.__getListAndRoundValue(entry,10) + "%",
-                settings.CMC_data_percent_change_7d : self.__getListAndRoundValue(entry,11) + "%",
+                settings.CMC_data_symbol : str(entry[settings.CMC_data_symbol]),
+                settings.CMC_data_quote_price : symbol + self.__getKeyAndRoundValue(entry,settings.CMC_data_quote_price),
+                settings.CMC_data_percent_change_1h : self.__getKeyAndRoundValue(entry,settings.CMC_data_percent_change_1h) + "%",
+                settings.CMC_data_percent_change_24h : self.__getKeyAndRoundValue(entry,settings.CMC_data_percent_change_24h) + "%",
+                settings.CMC_data_percent_change_7d : self.__getKeyAndRoundValue(entry,settings.CMC_data_percent_change_7d) + "%",
                 settings.CMC_data_quote_market_cap : self.__currencyToNiceFormat(entry)
                 }
         return str(json.dumps(outputDict))
 
     def __longPriceStdout(self,entry):
-        return str(entry[14]) + \
+        return str(entry[settings.CMC_data_symbol]) + \
             ": " + \
             self.__config.getValue(settings.API_section_name,settings.API_option_conversion_currency_symbol) + \
-            self.__getListAndRoundValue(entry,12)+ \
+            self.__getKeyAndRoundValue(entry,settings.CMC_data_quote_price)+ \
             ' 1H: ' + \
-            self.__getListAndRoundValue(entry,9)+ \
+            self.__getKeyAndRoundValue(entry,settings.CMC_data_percent_change_1h)+ \
             '% 1D: ' + \
-            self.__getListAndRoundValue(entry,10)+ \
+            self.__getKeyAndRoundValue(entry,settings.CMC_data_percent_change_24h)+ \
             '% 7D: ' + \
-            self.__getListAndRoundValue(entry,11)+ \
+            self.__getKeyAndRoundValue(entry,settings.CMC_data_percent_change_7d)+ \
             '% 24h Volume: ' + \
             self.__currencyToNiceFormat(entry)
 
-    def __getListAndRoundValue(self,entry,index):
+    def __getKeyAndRoundValue(self,entry,key):
         try:
-            value = round(entry[index],2)
+            value = round(entry[key],2)
             return str(value)
         except:
             return "NULL"
 
     def __currencyToNiceFormat(self,entry):
-        n = float(entry[17])
+        n = float(entry[settings.CMC_data_quote_volume_24h])
         millidx = max(0,min(len(millnames)-1,int(math.floor(0 if n == 0 else math.log10(abs(n))/3))))
         return '{:.2f}{}'.format(n / 10**(3 * millidx), millnames[millidx])
 
