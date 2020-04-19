@@ -1,6 +1,6 @@
 __pycache__/
 tags
-coinMarketCap/
+venv/
 .coverage
 config.ini
 data/

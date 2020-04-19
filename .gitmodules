@@ -1,3 +1,0 @@
-[submodule "modules/configChecker"]
-	path = modules/configChecker
-	url = https://github.com/stuianna/configChecker.git
