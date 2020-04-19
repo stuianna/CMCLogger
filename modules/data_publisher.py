@@ -13,24 +13,24 @@ class DataPublisher():
         self.__checkstatus()
         self.__database = database
         self.__healthList = [1] * 30
-        log.debug("Data publisher setup with inital status '{}'".format(status.getExpectations()))
+        log.debug("Data publisher setup with inital status '{}'".format(status.get_expectations()))
 
     def __checkstatus(self):
-        if self.__status.getValue(settings.status_file_all_time_section_name,settings.status_file_option_successful_calls) < 0:
+        if self.__status.get_value(settings.status_file_all_time_section_name,settings.status_file_option_successful_calls) < 0:
             self.__resetAllTimeStats()
-        if self.__status.getValue(settings.status_file_all_time_section_name,settings.status_file_option_failed_calls) < 0:
+        if self.__status.get_value(settings.status_file_all_time_section_name,settings.status_file_option_failed_calls) < 0:
             self.__resetAllTimeStats()
-        if self.__status.getValue(settings.status_file_all_time_section_name,settings.status_file_option_success_rate) < 0:
+        if self.__status.get_value(settings.status_file_all_time_section_name,settings.status_file_option_success_rate) < 0:
             self.__resetAllTimeStats()
-        if self.__status.getValue(settings.status_file_all_time_section_name,settings.status_file_option_success_rate) > 100.0:
+        if self.__status.get_value(settings.status_file_all_time_section_name,settings.status_file_option_success_rate) > 100.0:
             self.__resetAllTimeStats()
 
     def __resetAllTimeStats(self):
         log.warning("Status file {} sections conatins invalid values, restting to default".format(
             settings.status_file_all_time_section_name))
-        self.__status.setValue(settings.status_file_all_time_section_name,settings.status_file_option_successful_calls,0)
-        self.__status.setValue(settings.status_file_all_time_section_name,settings.status_file_option_failed_calls,0)
-        self.__status.setValue(settings.status_file_all_time_section_name,settings.status_file_option_success_rate,100.0)
+        self.__status.set_value(settings.status_file_all_time_section_name,settings.status_file_option_successful_calls,0)
+        self.__status.set_value(settings.status_file_all_time_section_name,settings.status_file_option_failed_calls,0)
+        self.__status.set_value(settings.status_file_all_time_section_name,settings.status_file_option_success_rate,100.0)
 
     def getStatus(self):
         return self.__status
@@ -44,43 +44,43 @@ class DataPublisher():
             self.__writeFailedCallStats(status)
 
         self.__writeCommonCallStats(status)
-        self.__status.writeConfigurationFile();
+        self.__status.write_configuration_file();
 
     def __writeCommonCallStats(self,status):
-        self.__status.setValue(settings.status_file_current_session_section_name,settings.status_file_option_success_rate,
-                self.__calculatePercent(self.__status.getValue(settings.status_file_current_session_section_name,settings.status_file_option_successful_calls),
-                self.__status.getValue(settings.status_file_current_session_section_name,settings.status_file_option_failed_calls)))
+        self.__status.set_value(settings.status_file_current_session_section_name,settings.status_file_option_success_rate,
+                self.__calculatePercent(self.__status.get_value(settings.status_file_current_session_section_name,settings.status_file_option_successful_calls),
+                self.__status.get_value(settings.status_file_current_session_section_name,settings.status_file_option_failed_calls)))
 
-        self.__status.setValue(settings.status_file_all_time_section_name,settings.status_file_option_success_rate,
-                self.__calculatePercent(self.__status.getValue(settings.status_file_all_time_section_name,settings.status_file_option_successful_calls),
-                self.__status.getValue(settings.status_file_all_time_section_name,settings.status_file_option_failed_calls)))
+        self.__status.set_value(settings.status_file_all_time_section_name,settings.status_file_option_success_rate,
+                self.__calculatePercent(self.__status.get_value(settings.status_file_all_time_section_name,settings.status_file_option_successful_calls),
+                self.__status.get_value(settings.status_file_all_time_section_name,settings.status_file_option_failed_calls)))
 
     def __calculateHealth(self,success):
         self.__healthList.append((int(success)))
         self.__healthList.pop(0)
         health = round((100 * sum(self.__healthList)/len(self.__healthList)),1)
-        self.__status.setValue(settings.status_file_current_session_section_name,settings.status_file_option_health,health)
+        self.__status.set_value(settings.status_file_current_session_section_name,settings.status_file_option_health,health)
 
     def __writeSuccessfulCallStats(self,status):
         self.__incrementStatusValue(settings.status_file_current_session_section_name,settings.status_file_option_successful_calls)
         self.__incrementStatusValue(settings.status_file_all_time_section_name,settings.status_file_option_successful_calls)
-        self.__status.setValue(settings.status_file_last_call_section_name,settings.status_file_option_timeStamp,
+        self.__status.set_value(settings.status_file_last_call_section_name,settings.status_file_option_timeStamp,
                 self.toLocalTime(status[settings.CMC_status_timestamp]))
-        self.__status.setValue(settings.status_file_last_call_section_name,settings.status_file_option_error_code,status[settings.CMC_status_error_code])
-        self.__status.setValue(settings.status_file_last_call_section_name,settings.status_file_option_error_message,status[settings.CMC_status_error_message])
-        self.__status.setValue(settings.status_file_last_call_section_name,settings.status_file_option_elapsed,status[settings.CMC_status_elapsed])
-        self.__status.setValue(settings.status_file_last_call_section_name,settings.status_file_option_credit_count,status[settings.CMC_status_credit_count])
+        self.__status.set_value(settings.status_file_last_call_section_name,settings.status_file_option_error_code,status[settings.CMC_status_error_code])
+        self.__status.set_value(settings.status_file_last_call_section_name,settings.status_file_option_error_message,status[settings.CMC_status_error_message])
+        self.__status.set_value(settings.status_file_last_call_section_name,settings.status_file_option_elapsed,status[settings.CMC_status_elapsed])
+        self.__status.set_value(settings.status_file_last_call_section_name,settings.status_file_option_credit_count,status[settings.CMC_status_credit_count])
         self.__calculateHealth(True)
 
     def __writeFailedCallStats(self,status):
         self.__incrementStatusValue(settings.status_file_current_session_section_name,settings.status_file_option_failed_calls)
         self.__incrementStatusValue(settings.status_file_all_time_section_name,settings.status_file_option_failed_calls)
-        self.__status.setValue(settings.status_file_last_failed_secion_name,settings.status_file_option_timeStamp,
+        self.__status.set_value(settings.status_file_last_failed_secion_name,settings.status_file_option_timeStamp,
                 self.toLocalTime(status[settings.CMC_status_timestamp]))
-        self.__status.setValue(settings.status_file_last_failed_secion_name,settings.status_file_option_error_code,status[settings.CMC_status_error_code])
-        self.__status.setValue(settings.status_file_last_failed_secion_name,settings.status_file_option_error_message,status[settings.CMC_status_error_message])
-        self.__status.setValue(settings.status_file_last_failed_secion_name,settings.status_file_option_elapsed,status[settings.CMC_status_elapsed])
-        self.__status.setValue(settings.status_file_last_failed_secion_name,settings.status_file_option_credit_count,status[settings.CMC_status_credit_count])
+        self.__status.set_value(settings.status_file_last_failed_secion_name,settings.status_file_option_error_code,status[settings.CMC_status_error_code])
+        self.__status.set_value(settings.status_file_last_failed_secion_name,settings.status_file_option_error_message,status[settings.CMC_status_error_message])
+        self.__status.set_value(settings.status_file_last_failed_secion_name,settings.status_file_option_elapsed,status[settings.CMC_status_elapsed])
+        self.__status.set_value(settings.status_file_last_failed_secion_name,settings.status_file_option_credit_count,status[settings.CMC_status_credit_count])
         self.__calculateHealth(False)
 
     def __calculatePercent(self,success,fail):
@@ -90,7 +90,7 @@ class DataPublisher():
         return str(parser.parse(iso8601).astimezone(tz.tzlocal()))
 
     def __incrementStatusValue(self,sectionName,optionName):
-        self.__status.setValue(sectionName,optionName,self.__status.getValue(sectionName,optionName)+1)
+        self.__status.set_value(sectionName,optionName,self.__status.get_value(sectionName,optionName)+1)
 
     def writeData(self,data):
         if data is None:

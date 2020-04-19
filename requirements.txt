@@ -1,6 +1,7 @@
 appdirs==1.4.3
 certifi==2019.11.28
 chardet==3.0.4
+config-checker==0.0.1
 coverage==5.0.4
 db-ops==0.0.3
 idna==2.9

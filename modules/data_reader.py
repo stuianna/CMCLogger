@@ -1,4 +1,3 @@
-from modules.configChecker.configChecker import ConfigChecker
 from dateutil import parser,tz
 from io import StringIO
 import settings
@@ -63,25 +62,25 @@ class DataReader():
 
     def __longStatusStdout(self,request):
         results = StringIO()
-        self.__statusFile.getConfigParserObject().write(results)
+        self.__statusFile.get_config_parser_object().write(results)
         return results.getvalue()
 
     def __longStatusJson(self,request):
-        return  json.dumps(self.__statusFile.getConfigParserObject()._sections)
+        return  json.dumps(self.__statusFile.get_config_parser_object()._sections)
 
     def __shortStatusStdout(self,request):
         minutes = self.__calculateMinutesSinceLastCall()
         return "Last successful call {} minutes ago, health {}%.".format(minutes,
-                self.__statusFile.getValue(settings.status_file_current_session_section_name,settings.status_file_option_health))
+                self.__statusFile.get_value(settings.status_file_current_session_section_name,settings.status_file_option_health))
 
     def __shortStatusJson(self,request):
         minutes = self.__calculateMinutesSinceLastCall()
-        health = self.__statusFile.getValue(settings.status_file_current_session_section_name,settings.status_file_option_health)
+        health = self.__statusFile.get_value(settings.status_file_current_session_section_name,settings.status_file_option_health)
         output = dict({settings.output_json_last_call : minutes, settings.output_json_health : health})
         return json.dumps(output)
 
     def __calculateMinutesSinceLastCall(self):
-        lastCall = int((parser.parse(self.__statusFile.getValue(
+        lastCall = int((parser.parse(self.__statusFile.get_value(
             settings.status_file_last_call_section_name,
             settings.status_file_option_timeStamp)).strftime('%s')))
         currentTime = int(time.time());
@@ -121,14 +120,14 @@ class DataReader():
     def __shortPriceStdout(self,entry):
         return str(entry[settings.CMC_data_symbol]) + \
             ": " + \
-            self.__config.getValue(settings.API_section_name,settings.API_option_conversion_currency_symbol) + \
+            self.__config.get_value(settings.API_section_name,settings.API_option_conversion_currency_symbol) + \
             self.__getKeyAndRoundValue(entry,settings.CMC_data_quote_price) + \
             " (" +  \
             self.__getKeyAndRoundValue(entry,settings.CMC_data_percent_change_24h) + \
             "%)"
 
     def __shortPriceJson(self,entry):
-        symbol = self.__config.getValue(settings.API_section_name,settings.API_option_conversion_currency_symbol)
+        symbol = self.__config.get_value(settings.API_section_name,settings.API_option_conversion_currency_symbol)
         outputDict = {
                 settings.CMC_data_symbol : str(entry[settings.CMC_data_symbol]),
                 settings.CMC_data_quote_price : symbol + self.__getKeyAndRoundValue(entry,settings.CMC_data_quote_price),
@@ -137,7 +136,7 @@ class DataReader():
         return str(json.dumps(outputDict))
 
     def __longPriceJson(self,entry):
-        symbol = self.__config.getValue(settings.API_section_name,settings.API_option_conversion_currency_symbol)
+        symbol = self.__config.get_value(settings.API_section_name,settings.API_option_conversion_currency_symbol)
         outputDict = {
                 settings.CMC_data_symbol : str(entry[settings.CMC_data_symbol]),
                 settings.CMC_data_quote_price : symbol + self.__getKeyAndRoundValue(entry,settings.CMC_data_quote_price),
@@ -151,7 +150,7 @@ class DataReader():
     def __longPriceStdout(self,entry):
         return str(entry[settings.CMC_data_symbol]) + \
             ": " + \
-            self.__config.getValue(settings.API_section_name,settings.API_option_conversion_currency_symbol) + \
+            self.__config.get_value(settings.API_section_name,settings.API_option_conversion_currency_symbol) + \
             self.__getKeyAndRoundValue(entry,settings.CMC_data_quote_price)+ \
             ' 1H: ' + \
             self.__getKeyAndRoundValue(entry,settings.CMC_data_percent_change_1h)+ \

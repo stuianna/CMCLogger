@@ -11,7 +11,7 @@ import argparse
 import subprocess
 from datetime import datetime
 from modules.cmcapi_wrapper import CMCAPI_Wrapper
-from modules.configChecker.configChecker import ConfigChecker
+from configchecker import ConfigChecker
 from modules.data_publisher import DataPublisher
 from dbops.sqhelper import SQHelper
 from modules.data_reader import DataReader
@@ -47,9 +47,9 @@ class CMCLogger():
         if daemonAlreadyRunning() and not forceStart:
             return
 
-        self.__status.setValue(settings.status_file_current_session_section_name,settings.status_file_option_successful_calls,0)
-        self.__status.setValue(settings.status_file_current_session_section_name,settings.status_file_option_failed_calls,0)
-        self.__status.setValue(settings.status_file_current_session_section_name,settings.status_file_option_success_rate,100.0)
+        self.__status.set_value(settings.status_file_current_session_section_name,settings.status_file_option_successful_calls,0)
+        self.__status.set_value(settings.status_file_current_session_section_name,settings.status_file_option_failed_calls,0)
+        self.__status.set_value(settings.status_file_current_session_section_name,settings.status_file_option_success_rate,100.0)
         self.__createAPIandPublisher()
 
         while True:
@@ -121,49 +121,49 @@ class CMCLogger():
 
     def __loadConfiguration(self,apiKey):
         config = ConfigChecker()
-        config.setExpectation(settings.API_section_name,settings.API_option_private_key,str,settings.API_option_privatate_key_default)
-        config.setExpectation(settings.API_section_name,settings.API_option_conversion_currency,str,settings.API_option_conversion_currency_default)
-        config.setExpectation(settings.API_section_name,settings.API_option_conversion_currency_symbol,str,settings.API_option_conversion_currency_symbol_default)
-        config.setExpectation(settings.API_section_name,settings.API_option_start_index,int,settings.API_option_start_index_default)
-        config.setExpectation(settings.API_section_name,settings.API_option_end_index,int,settings.API_option_end_index_default)
-        config.setExpectation(settings.API_section_name,settings.API_option_interval,int,settings.API_option_interval_default)
-        config.setExpectation(settings.general_section_name,settings.general_option_status_file_format,str,settings.general_option_status_file_format_default)
+        config.set_expectation(settings.API_section_name,settings.API_option_private_key,str,settings.API_option_privatate_key_default)
+        config.set_expectation(settings.API_section_name,settings.API_option_conversion_currency,str,settings.API_option_conversion_currency_default)
+        config.set_expectation(settings.API_section_name,settings.API_option_conversion_currency_symbol,str,settings.API_option_conversion_currency_symbol_default)
+        config.set_expectation(settings.API_section_name,settings.API_option_start_index,int,settings.API_option_start_index_default)
+        config.set_expectation(settings.API_section_name,settings.API_option_end_index,int,settings.API_option_end_index_default)
+        config.set_expectation(settings.API_section_name,settings.API_option_interval,int,settings.API_option_interval_default)
+        config.set_expectation(settings.general_section_name,settings.general_option_status_file_format,str,settings.general_option_status_file_format_default)
 
 
         fileLocation = os.path.join(self.__workingDirectory, settings.input_configuation_filename)
-        config.setConfigurationFile(fileLocation)
+        config.set_configuration_file(fileLocation)
 
         if apiKey is not None:
-            config.setValue(settings.API_section_name,settings.API_option_private_key,apiKey)
+            config.set_value(settings.API_section_name,settings.API_option_private_key,apiKey)
 
-        if config.writeConfigurationFile(fileLocation) is False:
+        if config.write_configuration_file(fileLocation) is False:
             log.critical("Failed to create required configuration file, exiting.")
             raise
         return config
 
     def __setupStatusFile(self):
         status = ConfigChecker()
-        status.setExpectation(settings.status_file_last_call_section_name,settings.status_file_option_timeStamp,str,datetime.now().isoformat())
-        status.setExpectation(settings.status_file_last_call_section_name,settings.status_file_option_error_code,int,0)
-        status.setExpectation(settings.status_file_last_call_section_name,settings.status_file_option_error_message,str,'')
-        status.setExpectation(settings.status_file_last_call_section_name,settings.status_file_option_elapsed,int,0)
-        status.setExpectation(settings.status_file_last_call_section_name,settings.status_file_option_credit_count,int,0)
-        status.setExpectation(settings.status_file_last_failed_secion_name,settings.status_file_option_timeStamp,str,'')
-        status.setExpectation(settings.status_file_last_failed_secion_name,settings.status_file_option_error_code,int,0)
-        status.setExpectation(settings.status_file_last_failed_secion_name,settings.status_file_option_error_message,str,'')
-        status.setExpectation(settings.status_file_last_failed_secion_name,settings.status_file_option_elapsed,int,0)
-        status.setExpectation(settings.status_file_last_failed_secion_name,settings.status_file_option_credit_count,int,0)
-        status.setExpectation(settings.status_file_current_session_section_name,settings.status_file_option_health,float,100.0)
-        status.setExpectation(settings.status_file_current_session_section_name,settings.status_file_option_successful_calls,int,0)
-        status.setExpectation(settings.status_file_current_session_section_name,settings.status_file_option_failed_calls,int,0)
-        status.setExpectation(settings.status_file_current_session_section_name,settings.status_file_option_success_rate,float,100.0)
-        status.setExpectation(settings.status_file_all_time_section_name,settings.status_file_option_successful_calls,int,0)
-        status.setExpectation(settings.status_file_all_time_section_name,settings.status_file_option_failed_calls,int,0)
-        status.setExpectation(settings.status_file_all_time_section_name,settings.status_file_option_success_rate,float,100.0)
+        status.set_expectation(settings.status_file_last_call_section_name,settings.status_file_option_timeStamp,str,datetime.now().isoformat())
+        status.set_expectation(settings.status_file_last_call_section_name,settings.status_file_option_error_code,int,0)
+        status.set_expectation(settings.status_file_last_call_section_name,settings.status_file_option_error_message,str,'')
+        status.set_expectation(settings.status_file_last_call_section_name,settings.status_file_option_elapsed,int,0)
+        status.set_expectation(settings.status_file_last_call_section_name,settings.status_file_option_credit_count,int,0)
+        status.set_expectation(settings.status_file_last_failed_secion_name,settings.status_file_option_timeStamp,str,'')
+        status.set_expectation(settings.status_file_last_failed_secion_name,settings.status_file_option_error_code,int,0)
+        status.set_expectation(settings.status_file_last_failed_secion_name,settings.status_file_option_error_message,str,'')
+        status.set_expectation(settings.status_file_last_failed_secion_name,settings.status_file_option_elapsed,int,0)
+        status.set_expectation(settings.status_file_last_failed_secion_name,settings.status_file_option_credit_count,int,0)
+        status.set_expectation(settings.status_file_current_session_section_name,settings.status_file_option_health,float,100.0)
+        status.set_expectation(settings.status_file_current_session_section_name,settings.status_file_option_successful_calls,int,0)
+        status.set_expectation(settings.status_file_current_session_section_name,settings.status_file_option_failed_calls,int,0)
+        status.set_expectation(settings.status_file_current_session_section_name,settings.status_file_option_success_rate,float,100.0)
+        status.set_expectation(settings.status_file_all_time_section_name,settings.status_file_option_successful_calls,int,0)
+        status.set_expectation(settings.status_file_all_time_section_name,settings.status_file_option_failed_calls,int,0)
+        status.set_expectation(settings.status_file_all_time_section_name,settings.status_file_option_success_rate,float,100.0)
 
         fileLocation = os.path.join(self.__workingDirectory,settings.status_file_directory, settings.status_file_name)
-        status.setConfigurationFile(fileLocation)
-        if not status.writeConfigurationFile(fileLocation):
+        status.set_configuration_file(fileLocation)
+        if not status.write_configuration_file(fileLocation):
             log.critical("Failed to create required status file, exiting")
             raise
         return status

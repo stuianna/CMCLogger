@@ -1,5 +1,5 @@
 import logging
-from modules.configChecker.configChecker import ConfigChecker
+from configchecker import ConfigChecker
 import settings
 from requests import Request, Session
 from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
@@ -21,11 +21,11 @@ class CMCAPI_Wrapper():
 
     def __init__(self,config):
         self.__configuration = {
-                'privateKey' : config.getValue(settings.API_section_name,settings.API_option_private_key),
-                'conversionCurrency' : config.getValue(settings.API_section_name,settings.API_option_conversion_currency),
-                'startIndex' : config.getValue(settings.API_section_name,settings.API_option_start_index),
-                'endIndex' : config.getValue(settings.API_section_name,settings.API_option_end_index),
-                'callInterval' : config.getValue(settings.API_section_name,settings.API_option_interval)
+                'privateKey' : config.get_value(settings.API_section_name,settings.API_option_private_key),
+                'conversionCurrency' : config.get_value(settings.API_section_name,settings.API_option_conversion_currency),
+                'startIndex' : config.get_value(settings.API_section_name,settings.API_option_start_index),
+                'endIndex' : config.get_value(settings.API_section_name,settings.API_option_end_index),
+                'callInterval' : config.get_value(settings.API_section_name,settings.API_option_interval)
                 }
         self.__checkConfigurationValues()
         log.debug("API wrapper initialised with confg '{}'".format(str(self.__configuration)))

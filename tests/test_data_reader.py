@@ -4,7 +4,7 @@ import logging
 from io import StringIO
 from modules.data_publisher import DataPublisher
 from modules.data_reader import DataReader
-from modules.configChecker.configChecker import ConfigChecker
+from configchecker import ConfigChecker
 import settings
 import json
 import datetime
@@ -52,7 +52,7 @@ class CMCAPI_configuration_setting_and_checking(unittest.TestCase):
         request[settings.data_query_detail] = settings.data_query_detail_short
         output = self.reader.processRequest(request)
         currentTime = int(time.time())
-        lastCall = int((parser.parse(self.reader.getStatusFile().getValue(
+        lastCall = int((parser.parse(self.reader.getStatusFile().get_value(
             settings.status_file_last_call_section_name,
             settings.status_file_option_timeStamp)).strftime('%s')))
         minutes = (currentTime - lastCall) / (60)
@@ -66,7 +66,7 @@ class CMCAPI_configuration_setting_and_checking(unittest.TestCase):
         request[settings.data_query_detail] = settings.data_query_detail_long
         output = self.reader.processRequest(request)
         expected = StringIO()
-        self.status.getConfigParserObject().write(expected)
+        self.status.get_config_parser_object().write(expected)
         self.assertEqual(expected.getvalue(),output)
 
     def test_getting_the_status_short_version_json_bad_output_detail(self):
@@ -86,7 +86,7 @@ class CMCAPI_configuration_setting_and_checking(unittest.TestCase):
         request[settings.data_query_detail] = settings.data_query_detail_short
         output = self.reader.processRequest(request)
         currentTime = int(time.time())
-        lastCall = int((parser.parse(self.reader.getStatusFile().getValue(
+        lastCall = int((parser.parse(self.reader.getStatusFile().get_value(
             settings.status_file_last_call_section_name,
             settings.status_file_option_timeStamp)).strftime('%s')))
         minutes = (currentTime - lastCall) / (60)
@@ -104,7 +104,7 @@ class CMCAPI_configuration_setting_and_checking(unittest.TestCase):
         request[settings.data_query_format] = settings.data_query_format_json
         request[settings.data_query_detail] = settings.data_query_detail_long
         output = self.reader.processRequest(request)
-        expected = json.dumps(self.status.getConfigParserObject()._sections)
+        expected = json.dumps(self.status.get_config_parser_object()._sections)
         self.assertEqual(expected,output)
 
     def test_getting_the_latest_price_single_tag_short_version_stdout(self):

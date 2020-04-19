@@ -3,8 +3,6 @@ source = .
 
 omit =
     tests/*
-    modules/configChecker*
 		modules/__init__.py
-		modules/configChecker/__init__.py
-		coinMarketCap/*
+		venv/*
 		__init__.py
