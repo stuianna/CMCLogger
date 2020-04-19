@@ -24,7 +24,7 @@ class DataReader():
         return self.__statusFile
 
     def processRequest(self,request):
-        log.info("Processing data request {}".format(request))
+        log.debug("Processing data request {}".format(request))
         if request[settings.data_query_type] == settings.data_query_type_price:
             return self.__processPriceRequest(request)
         elif request[settings.data_query_type] == settings.data_query_type_status:
