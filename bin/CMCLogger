@@ -125,11 +125,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.kill:
-        subprocess.Popen(['killall', 'CMCLogger.py'])
+        subprocess.Popen(['killall', 'CMCLogger'])
         sys.exit()
 
     if args.working_directory is not None:
-        workingDirectory = args.working_directory
+        workingDirectory = args.working_directory[0]
     else:
         workingDirectory = appdirs.user_config_dir(settings.appNameDirectory)
 
@@ -146,7 +146,7 @@ if __name__ == '__main__':
     try:
         cmcLogger = CMCLogger(workingDirectory, logLevel, api_key)
     except Exception as e:
-        log.CRITICAL("Failed to start logger module. Exception {}.".format(e))
+        log.critical("Failed to start logger module. Exception {}.".format(e))
         print("Failed to start logger module. Exception {}.".format(e))
         sys.exit()
 
