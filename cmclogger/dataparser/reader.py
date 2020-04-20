@@ -1,16 +1,15 @@
-from dateutil import parser,tz
+from dateutil import parser
 from io import StringIO
-import settings
+import cmclogger.settings as settings
 import logging
 import json
 import time
-import sys
 import math
 
 log = logging.getLogger(__name__)
-millnames = ['',' Thousand',' Million',' Billion',' Trillion']
+millnames = ['', ' Thousand', ' Million', ' Billion', ' Trillion']
 
-class DataReader():
+class Reader():
 
     def __init__(self,statusFile,database,config):
 

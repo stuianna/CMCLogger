@@ -1,12 +1,13 @@
-import settings
+import cmclogger.settings as settings
 import logging
 import time
-from dateutil import parser,tz
+from dateutil import parser, tz
 
 allowedDataFormats = ['ini']
 log = logging.getLogger(__name__)
 
-class DataPublisher():
+
+class Publisher():
 
     def __init__(self,status,database):
         self.__status = status

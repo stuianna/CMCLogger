@@ -1,15 +1,14 @@
 import unittest
 from unittest import mock
 import logging
-from modules.cmcapi_wrapper import CMCAPI_Wrapper
+from cmclogger.api.getlatest import CMCGetLatest
 from configchecker import ConfigChecker
-from requests import Request, Session
 from requests.models import Response
 from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
-import settings
+import cmclogger.settings as settings
 import json
 import datetime
-import time
+
 logging.disable(logging.CRITICAL)
 
 response_status_401 = {"status": {"timestamp": "2018-06-02T22:51:28.209Z","error_code": 1002,"error_message": "API key missing.","elapsed": 10,"credit_count": 0}}
@@ -60,7 +59,7 @@ class CMCAPI_configuration_setting_and_checking(unittest.TestCase):
         ## Setting an empty filename automatically loads the default values
         self.config.set_configuration_file('');
 
-        self.api = CMCAPI_Wrapper(self.config)
+        self.api = CMCGetLatest(self.config)
 
     def test_configuration_is_saved_correctly(self):
         apiConfig = self.api.getConfiguration()
@@ -72,38 +71,38 @@ class CMCAPI_configuration_setting_and_checking(unittest.TestCase):
 
     def test_configuration_start_index_cant_be_less_than_one(self):
         self.config.set_value(settings.API_section_name,settings.API_option_start_index,-1)
-        self.api = CMCAPI_Wrapper(self.config)
+        self.api = CMCGetLatest(self.config)
         apiConfig = self.api.getConfiguration()
         self.assertIs(apiConfig['startIndex'],settings.API_option_start_index_default)
 
     def test_configuration_end_index_cant_be_less_than_start_index(self):
         self.config.set_value(settings.API_section_name,settings.API_option_start_index,10)
         self.config.set_value(settings.API_section_name,settings.API_option_end_index,1)
-        self.api = CMCAPI_Wrapper(self.config)
+        self.api = CMCGetLatest(self.config)
         apiConfig = self.api.getConfiguration()
         self.assertIs(apiConfig['endIndex'],10)
 
     def test_configuration_start_index_cant_be_greater_than_4999(self):
         self.config.set_value(settings.API_section_name,settings.API_option_start_index,5000)
-        self.api = CMCAPI_Wrapper(self.config)
+        self.api = CMCGetLatest(self.config)
         apiConfig = self.api.getConfiguration()
         self.assertIs(apiConfig['startIndex'],settings.API_option_start_index_default)
 
     def test_configuration_call_interval_must_be_greater_than_zero(self):
         self.config.set_value(settings.API_section_name,settings.API_option_interval,0)
-        self.api = CMCAPI_Wrapper(self.config)
+        self.api = CMCGetLatest(self.config)
         apiConfig = self.api.getConfiguration()
         self.assertIs(apiConfig['callInterval'],settings.API_option_interval_default)
 
     def test_configuration_conversion_currency_must_be_of_allowed_type(self):
         self.config.set_value(settings.API_section_name,settings.API_option_conversion_currency,'asdf')
-        self.api = CMCAPI_Wrapper(self.config)
+        self.api = CMCGetLatest(self.config)
         apiConfig = self.api.getConfiguration()
         self.assertIs(apiConfig['conversionCurrency'],settings.API_option_conversion_currency_default)
 
     def test_configuration_api_key_cannot_be_blank(self):
         self.config.set_value(settings.API_section_name,settings.API_option_private_key,'')
-        self.api = CMCAPI_Wrapper(self.config)
+        self.api = CMCGetLatest(self.config)
         apiConfig = self.api.getConfiguration()
         self.assertIs(apiConfig['privateKey'],settings.API_option_privatate_key_default)
 
@@ -141,9 +140,9 @@ class API_getting_requests(unittest.TestCase):
         ## Setting an empty filename automatically loads the default values
         self.config.set_configuration_file('');
 
-        self.api = CMCAPI_Wrapper(self.config)
+        self.api = CMCGetLatest(self.config)
 
-    @mock.patch('modules.cmcapi_wrapper.Session.get')
+    @mock.patch('cmclogger.api.getlatest.Session.get')
     def test_correctly_formed_api_call(self,session_mock):
         expectedUrl = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
         expectedParameters = {
@@ -162,7 +161,7 @@ class API_getting_requests(unittest.TestCase):
         session_mock.assert_called_with(expectedUrl,params=expectedParameters,timeout=settings.API_call_timeout_seconds)
 
 
-    @mock.patch('modules.cmcapi_wrapper.Session.get')
+    @mock.patch('cmclogger.api.getlatest.Session.get')
     def test_status_200_results_in_true_return(self,session_mock):
 
         mock_response = Response()
@@ -173,7 +172,7 @@ class API_getting_requests(unittest.TestCase):
         success = self.api.getLatest();
         self.assertIs(success,True)
 
-    @mock.patch('modules.cmcapi_wrapper.Session.get')
+    @mock.patch('cmclogger.api.getlatest.Session.get')
     def test_custom_status_and_false_returned_if_bad_keys_in_json_response_200(self,session_mock):
         mock_response = Response()
         mock_response.status_code = 200
@@ -189,7 +188,7 @@ class API_getting_requests(unittest.TestCase):
         self.assertIs(status[settings.CMC_status_elapsed],0)
         self.assertIs(status[settings.CMC_status_credit_count],0)
 
-    @mock.patch('modules.cmcapi_wrapper.Session.get')
+    @mock.patch('cmclogger.api.getlatest.Session.get')
     def test_custom_status_and_false_returned_if_bad_keys_in_json_response_not_200(self,session_mock):
         mock_response = Response()
         mock_response.status_code = 401
@@ -206,7 +205,7 @@ class API_getting_requests(unittest.TestCase):
         self.assertIs(status[settings.CMC_status_elapsed],0)
         self.assertIs(status[settings.CMC_status_credit_count],0)
 
-    @mock.patch('modules.cmcapi_wrapper.Session.get')
+    @mock.patch('cmclogger.api.getlatest.Session.get')
     def test_custom_status_and_false_returned_if_cannot_parse_json_200(self,session_mock):
         mock_response = Response()
         mock_response.status_code = 200
@@ -223,7 +222,7 @@ class API_getting_requests(unittest.TestCase):
         self.assertIs(status[settings.CMC_status_elapsed],0)
         self.assertIs(status[settings.CMC_status_credit_count],0)
 
-    @mock.patch('modules.cmcapi_wrapper.Session.get')
+    @mock.patch('cmclogger.api.getlatest.Session.get')
     def test_custom_status_and_false_returned_if_cannot_parse_json_not_200(self,session_mock):
         mock_response = Response()
         mock_response.status_code = 401
@@ -241,8 +240,8 @@ class API_getting_requests(unittest.TestCase):
         self.assertIs(status[settings.CMC_status_credit_count],0)
 
 
-    @mock.patch('modules.cmcapi_wrapper.time.sleep')
-    @mock.patch('modules.cmcapi_wrapper.Session.get')
+    @mock.patch('cmclogger.api.getlatest.time.sleep')
+    @mock.patch('cmclogger.api.getlatest.Session.get')
     def test_custom_status_and_false_returned_if_connection_error_occurs(self,session_mock,sleep_mock):
         session_mock.side_effect = ConnectionError()
 
@@ -258,7 +257,7 @@ class API_getting_requests(unittest.TestCase):
         self.assertIs(status[settings.CMC_status_elapsed],0)
         self.assertIs(status[settings.CMC_status_credit_count],0)
 
-    @mock.patch('modules.cmcapi_wrapper.Session.get')
+    @mock.patch('cmclogger.api.getlatest.Session.get')
     def test_custom_status_and_false_returned_if_timeout_error_occurs(self,session_mock):
         session_mock.side_effect = Timeout()
 
@@ -273,7 +272,7 @@ class API_getting_requests(unittest.TestCase):
         self.assertIs(status[settings.CMC_status_elapsed],0)
         self.assertIs(status[settings.CMC_status_credit_count],0)
 
-    @mock.patch('modules.cmcapi_wrapper.Session.get')
+    @mock.patch('cmclogger.api.getlatest.Session.get')
     def test_custom_status_and_false_returned_if_redirecty_error_occurs(self,session_mock):
         session_mock.side_effect = TooManyRedirects()
 
@@ -288,7 +287,7 @@ class API_getting_requests(unittest.TestCase):
         self.assertIs(status[settings.CMC_status_elapsed],0)
         self.assertIs(status[settings.CMC_status_credit_count],0)
 
-    @mock.patch('modules.cmcapi_wrapper.Session.get')
+    @mock.patch('cmclogger.api.getlatest.Session.get')
     def test_custom_status_and_false_returned_if_bad_status_keys_200(self,session_mock):
         mock_response = Response()
         mock_response.status_code = 200
@@ -306,7 +305,7 @@ class API_getting_requests(unittest.TestCase):
         self.assertIs(status[settings.CMC_status_elapsed],0)
         self.assertIs(status[settings.CMC_status_credit_count],0)
 
-    @mock.patch('modules.cmcapi_wrapper.Session.get')
+    @mock.patch('cmclogger.api.getlatest.Session.get')
     def test_custom_status_and_false_returned_if_data_length_isnt_correct(self,session_mock):
         mock_response = Response()
         mock_response.status_code = 200
@@ -324,7 +323,7 @@ class API_getting_requests(unittest.TestCase):
         self.assertIs(status[settings.CMC_status_elapsed],0)
         self.assertIs(status[settings.CMC_status_credit_count],0)
 
-    @mock.patch('modules.cmcapi_wrapper.Session.get')
+    @mock.patch('cmclogger.api.getlatest.Session.get')
     def test_custom_status_and_false_returned_if_bad_status_keys_not_200(self,session_mock):
         mock_response = Response()
         mock_response.status_code = 403
@@ -342,7 +341,7 @@ class API_getting_requests(unittest.TestCase):
         self.assertIs(status[settings.CMC_status_elapsed],0)
         self.assertIs(status[settings.CMC_status_credit_count],0)
 
-    @mock.patch('modules.cmcapi_wrapper.Session.get')
+    @mock.patch('cmclogger.api.getlatest.Session.get')
     def test_api_status_and_false_if_code_is_not_200(self,session_mock):
         mock_response = Response()
         mock_response.status_code = 401
@@ -360,7 +359,7 @@ class API_getting_requests(unittest.TestCase):
         self.assertIs(status[settings.CMC_status_elapsed],10)
         self.assertIs(status[settings.CMC_status_credit_count],0)
 
-    @mock.patch('modules.cmcapi_wrapper.Session.get')
+    @mock.patch('cmclogger.api.getlatest.Session.get')
     def test_false_and_custom_status_if_json_data_is_bad(self,session_mock):
         mock_response = Response()
         mock_response.status_code = 200
@@ -378,7 +377,7 @@ class API_getting_requests(unittest.TestCase):
         self.assertIs(status[settings.CMC_status_elapsed],0)
         self.assertIs(status[settings.CMC_status_credit_count],0)
 
-    @mock.patch('modules.cmcapi_wrapper.Session.get')
+    @mock.patch('cmclogger.api.getlatest.Session.get')
     def test_API_call_increments_next_call_time_based_on_configuration(self,session_mock):
 
         mock_response = Response()

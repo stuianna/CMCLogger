@@ -1,7 +1,6 @@
 import logging
-from configchecker import ConfigChecker
-import settings
-from requests import Request, Session
+import cmclogger.settings as settings
+from requests import Session
 from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
 import json
 import datetime
@@ -17,7 +16,7 @@ allowedCurrencies = [
         'RUB','SAR','RSD','SGD','ZAR','KRW','SSP','VES','LKR','SEK','CHF','THB','TTD','TND','TRY','UGX','UAH','AED',
         'UYU','UZS','VND']
 
-class CMCAPI_Wrapper():
+class CMCGetLatest():
 
     def __init__(self,config):
         self.__configuration = {

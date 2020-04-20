@@ -1,0 +1,128 @@
+#!/bin/python3
+
+import sys
+import logging
+import argparse
+import subprocess
+import appdirs
+import cmclogger.settings as settings
+from cmclogger.cmclogger import CMCLogger
+
+log = logging.getLogger(__name__)
+
+
+def createArguments(parser):
+    parser.add_argument('-a','--api_key',
+            nargs=1,
+            help="Supply the Coin Market Cap API key to be used. This key is stored for subsequent use.",
+            default = None)
+    parser.add_argument('-q','--query',
+            nargs='+',
+            help="Query information about one or more cyptocurrency symbols. Can be combined with -j and -d to modify the output format.")
+    parser.add_argument('-w','--working_directory',
+            nargs=1,
+            help="Specify the directory to setup the configuration, status and database files. If no supplied, set to user configuration directory.",
+            default = None)
+    parser.add_argument('-k','--kill',
+            action='store_true',
+            help="Kills any running CMCLogger daemon",
+            default = False)
+    parser.add_argument('-g','--generate_config',
+            action='store_true',
+            help="Generates the neccessary configuration files.")
+    parser.add_argument('-s','--status',
+            action='store_true',
+            help="Get the status of the CMCLogger, can be combined with -j and -l to modify the output format.")
+    parser.add_argument('-d','--detail',
+            action='store_true',
+            help="To be used with -s and -q options. Outputs verbose options for the specified symbols or logger status.")
+    parser.add_argument('-j','--json',
+            action='store_true',
+            help="To be used with -s and -q options. Outputs symbol or status information in JSON format.")
+    parser.add_argument('-l','--log',
+            nargs=1,
+            help="Specify the log level, must be one of either DEBUG, INFO, WARNING, ERROR or CRITICAL. The default level is INFO")
+
+
+def processLogLevel(level):
+
+    if level == 'DEBUG':
+        return logging.DEBUG
+    elif level == 'INFO':
+        return logging.INFO
+    elif level == 'WARNING':
+        return logging.WARNING
+    elif level == 'ERROR':
+        return logging.ERROR
+    elif level == 'CRITICAL':
+        return logging.CRITICAL
+    else:
+        return logging.INFO
+
+
+def processQuery(args, cmcLogger):
+
+    request = dict()
+    if args.json is True:
+        request[settings.data_query_format] = settings.data_query_format_json
+    else:
+        request[settings.data_query_format] = settings.data_query_format_stdout
+
+    if args.detail is True:
+        request[settings.data_query_detail] = settings.data_query_detail_long
+    else:
+        request[settings.data_query_detail] = settings.data_query_detail_short
+
+    request[settings.data_query_type] = settings.data_query_type_price
+
+    if args.query is not None:
+        for symbol in args.query:
+            request[settings.data_query_tag] = symbol
+            cmcLogger.dataRequest(request)
+
+    if args.status is True:
+        request[settings.data_query_type] = settings.data_query_type_status
+        cmcLogger.dataRequest(request)
+
+    sys.exit()
+
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser()
+    createArguments(parser)
+    args = parser.parse_args()
+
+    if args.kill:
+        subprocess.Popen(['killall','CMCLogger.py'])
+        sys.exit()
+
+    if args.working_directory is not None:
+        workingDirectory = args.workingDirectory
+    else:
+        workingDirectory = appdirs.user_config_dir(settings.appNameDirectory)
+
+    if args.log is not None:
+        logLevel = processLogLevel(args.log[0])
+    else:
+        logLevel = logging.INFO
+
+    if args.api_key is not None:
+        api_key = args.api_key[0]
+    else:
+        api_key = None
+
+    try:
+        cmcLogger = CMCLogger(workingDirectory,logLevel,api_key)
+    except:
+        log.CRITICAL("Failed to start logger module, exiting")
+        print("Failed to start logger module, exiting")
+        sys.exit()
+
+    if args.generate_config is True:
+        sys.exit()
+
+    if args.query is not None or args.status:
+        processQuery(args, cmcLogger)
+
+    cmcLogger.startDaemon()

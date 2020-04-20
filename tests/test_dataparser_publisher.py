@@ -1,15 +1,10 @@
 import unittest
-from unittest import mock
 import logging
-from modules.data_publisher import DataPublisher
-from configchecker import ConfigChecker
-import settings
-import json
-import datetime
-import time
+from cmclogger.dataparser.publisher import Publisher
+import cmclogger.settings as settings
+from cmclogger.cmclogger import CMCLogger
 import os
 logging.disable(logging.CRITICAL)
-from CMCLogger import CMCLogger
 
 badData = [{ # Has missing entry
     "circulating_supply": 4642367414,
@@ -136,28 +131,28 @@ class CMCAPI_configuration_setting_and_checking(unittest.TestCase):
 
     def test_all_time_successful_calls_cannot_be_less_than_zero_reset_global_status(self):
         self.status.set_value(settings.status_file_all_time_section_name,settings.status_file_option_successful_calls,-1)
-        publisher = DataPublisher(self.status,None);
+        publisher = Publisher(self.status,None);
         self.assertIs(publisher.getStatus().get_value(settings.status_file_all_time_section_name,settings.status_file_option_successful_calls),0)
         self.assertIs(publisher.getStatus().get_value(settings.status_file_all_time_section_name,settings.status_file_option_failed_calls),0)
         self.assertEqual(publisher.getStatus().get_value(settings.status_file_all_time_section_name,settings.status_file_option_success_rate),100.0)
 
     def test_all_time_failed_calls_cannot_be_less_than_zero_reset_global_status(self):
         self.status.set_value(settings.status_file_all_time_section_name,settings.status_file_option_failed_calls,-1)
-        publisher = DataPublisher(self.status,None);
+        publisher = Publisher(self.status,None);
         self.assertIs(publisher.getStatus().get_value(settings.status_file_all_time_section_name,settings.status_file_option_successful_calls),0)
         self.assertIs(publisher.getStatus().get_value(settings.status_file_all_time_section_name,settings.status_file_option_failed_calls),0)
         self.assertEqual(publisher.getStatus().get_value(settings.status_file_all_time_section_name,settings.status_file_option_success_rate),100.0)
 
     def test_all_time_success_cannot_be_less_than_zero_reset_global_status(self):
         self.status.set_value(settings.status_file_all_time_section_name,settings.status_file_option_success_rate,-0.01)
-        publisher = DataPublisher(self.status,None);
+        publisher = Publisher(self.status,None);
         self.assertIs(publisher.getStatus().get_value(settings.status_file_all_time_section_name,settings.status_file_option_successful_calls),0)
         self.assertIs(publisher.getStatus().get_value(settings.status_file_all_time_section_name,settings.status_file_option_failed_calls),0)
         self.assertEqual(publisher.getStatus().get_value(settings.status_file_all_time_section_name,settings.status_file_option_success_rate),100.0)
 
     def test_all_time_success_cannot_be_more_than_100_reset_global_status(self):
         self.status.set_value(settings.status_file_all_time_section_name,settings.status_file_option_success_rate,100.01)
-        publisher = DataPublisher(self.status,None);
+        publisher = Publisher(self.status,None);
         self.assertIs(publisher.getStatus().get_value(settings.status_file_all_time_section_name,settings.status_file_option_successful_calls),0)
         self.assertIs(publisher.getStatus().get_value(settings.status_file_all_time_section_name,settings.status_file_option_failed_calls),0)
         self.assertEqual(publisher.getStatus().get_value(settings.status_file_all_time_section_name,settings.status_file_option_success_rate),100.0)
@@ -175,7 +170,7 @@ class CMCAPI_writing_status_files(unittest.TestCase):
         self.workingDirectory = 'tests'
         cmcLogger = CMCLogger(self.workingDirectory,logging.CRITICAL)
         self.status = cmcLogger.getStatusFile()
-        self.publisher = DataPublisher(self.status,None);
+        self.publisher = Publisher(self.status,None);
 
     def tearDown(self):
         try:
@@ -304,7 +299,7 @@ class CMCAPI_configuration_writeing_output_data(unittest.TestCase):
         cmcLogger = CMCLogger(self.workingDirectory,logging.CRITICAL)
         self.status = cmcLogger.getStatusFile()
         self.database = cmcLogger.getDatabase()
-        self.publisher = DataPublisher(self.status,self.database);
+        self.publisher = Publisher(self.status,self.database);
 
     def test_database_file_is_not_created_with_no_permissions(self):
         self.workingDirectory = '/'

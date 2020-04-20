@@ -1,18 +1,14 @@
 import unittest
-from unittest import mock
 import logging
 from io import StringIO
-from modules.data_publisher import DataPublisher
-from modules.data_reader import DataReader
-from configchecker import ConfigChecker
-import settings
+from cmclogger.dataparser.reader import Reader
+import cmclogger.settings as settings
 import json
-import datetime
 import time
-import os
+from cmclogger.cmclogger import CMCLogger
+from dateutil import parser
+
 logging.disable(logging.CRITICAL)
-from CMCLogger import CMCLogger
-from dateutil import parser,tz
 
 requestFormat =  {
         settings.data_query_type     : 'price',      # price , status
@@ -213,7 +209,7 @@ class CMCAPI_configuration_setting_and_checking(unittest.TestCase):
         self.status = cmcLogger.getStatusFile()
         self.config = cmcLogger.getConfigFile()
         self.database = cmcLogger.getDatabase()
-        self.reader = DataReader(self.status,self.database,self.config)
+        self.reader = Reader(self.status,self.database,self.config)
 
     def tearDown(self):
         pass
