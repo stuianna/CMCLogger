@@ -48,7 +48,7 @@ class CMCAPI_configuration_setting_and_checking(unittest.TestCase):
         request[settings.data_query_detail] = settings.data_query_detail_short
         output = self.reader.processRequest(request)
         currentTime = int(time.time())
-        lastCall = int((parser.parse(self.reader.getStatusFile().get_value(
+        lastCall = int((parser.parse(self.reader.get_status_file().get_value(
             settings.status_file_last_call_section_name,
             settings.status_file_option_timeStamp)).strftime('%s')))
         minutes = (currentTime - lastCall) / (60)
@@ -82,7 +82,7 @@ class CMCAPI_configuration_setting_and_checking(unittest.TestCase):
         request[settings.data_query_detail] = settings.data_query_detail_short
         output = self.reader.processRequest(request)
         currentTime = int(time.time())
-        lastCall = int((parser.parse(self.reader.getStatusFile().get_value(
+        lastCall = int((parser.parse(self.reader.get_status_file().get_value(
             settings.status_file_last_call_section_name,
             settings.status_file_option_timeStamp)).strftime('%s')))
         minutes = (currentTime - lastCall) / (60)
@@ -206,9 +206,9 @@ class CMCAPI_configuration_setting_and_checking(unittest.TestCase):
     def setUp(self):
         self.workingDirectory = 'tests/mockData'
         cmcLogger = CMCLogger(self.workingDirectory,logging.CRITICAL)
-        self.status = cmcLogger.getStatusFile()
-        self.config = cmcLogger.getConfigFile()
-        self.database = cmcLogger.getDatabase()
+        self.status = cmcLogger.get_status_file()
+        self.config = cmcLogger.get_config_file()
+        self.database = cmcLogger.get_database()
         self.reader = Reader(self.status,self.database,self.config)
 
     def tearDown(self):

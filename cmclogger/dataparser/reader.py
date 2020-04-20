@@ -19,7 +19,7 @@ class Reader():
 
         log.debug("Starting a new data reader instance")
 
-    def getStatusFile(self):
+    def get_status_file(self):
         return self.__statusFile
 
     def processRequest(self,request):

@@ -124,7 +124,7 @@ class CMCAPI_configuration_setting_and_checking(unittest.TestCase):
     def setUp(self):
         self.workingDirectory = 'tests'
         cmcLogger = CMCLogger(self.workingDirectory,logging.CRITICAL)
-        self.status = cmcLogger.getStatusFile()
+        self.status = cmcLogger.get_status_file()
         #self.status = ConfigChecker()
         #makeDirectoriesAsNeeded(self.workingDirectory)
         #setStatusFileOptions(self.status,self.workingDirectory)
@@ -169,7 +169,7 @@ class CMCAPI_writing_status_files(unittest.TestCase):
     def setUp(self):
         self.workingDirectory = 'tests'
         cmcLogger = CMCLogger(self.workingDirectory,logging.CRITICAL)
-        self.status = cmcLogger.getStatusFile()
+        self.status = cmcLogger.get_status_file()
         self.publisher = Publisher(self.status,None);
 
     def tearDown(self):
@@ -297,8 +297,8 @@ class CMCAPI_configuration_writeing_output_data(unittest.TestCase):
     def setUp(self):
         self.workingDirectory = 'tests'
         cmcLogger = CMCLogger(self.workingDirectory,logging.CRITICAL)
-        self.status = cmcLogger.getStatusFile()
-        self.database = cmcLogger.getDatabase()
+        self.status = cmcLogger.get_status_file()
+        self.database = cmcLogger.get_database()
         self.publisher = Publisher(self.status,self.database);
 
     def test_database_file_is_not_created_with_no_permissions(self):

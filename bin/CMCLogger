@@ -109,11 +109,11 @@ def processQuery(args, cmclogger):
     if args.query is not None:
         for symbol in args.query:
             request[settings.data_query_tag] = symbol
-            cmclogger.dataRequest(request)
+            cmclogger.data_request(request)
 
     if args.status is True:
         request[settings.data_query_type] = settings.data_query_type_status
-        cmclogger.dataRequest(request)
+        cmclogger.data_request(request)
 
     sys.exit()
 
@@ -156,4 +156,4 @@ if __name__ == '__main__':
     if args.query is not None or args.status:
         processQuery(args, cmcLogger)
 
-    cmcLogger.startDaemon()
+    cmcLogger.start_daemon()
