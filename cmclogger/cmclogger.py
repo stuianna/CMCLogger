@@ -159,12 +159,15 @@ class CMCLogger():
 
     def to_excel(self):
         tables = self.__database.get_table_names()
+        if len(tables) == 0:
+            return False
         df_list = []
         for table in tables:
             df_list.append(self.__database.table_to_df(table))
         writer = pd.ExcelWriter(r"cryptoData.xlsx")
         _ = [A.to_excel(writer,sheet_name="{0}".format(tables[i])) for i, A in enumerate(df_list)]
         writer.save()
+        return True
 
     def __create_API_and_publisher(self):
         if self.__api is None:

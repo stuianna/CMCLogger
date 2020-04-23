@@ -158,7 +158,8 @@ if __name__ == '__main__':
 
     if args.excel is True:
         print("Copying database to excel file, this might take a while.")
-        cmcLogger.to_excel()
+        if not cmcLogger.to_excel():
+            print("No data exists in database, no file written")
         sys.exit()
 
     if args.generate_config is True:
