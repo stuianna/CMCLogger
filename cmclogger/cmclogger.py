@@ -5,7 +5,6 @@ import os
 import time
 import logging
 import socket
-import daemon
 from datetime import datetime
 from dbops.sqhelper import SQHelper
 from configchecker import ConfigChecker
