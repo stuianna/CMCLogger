@@ -9,7 +9,7 @@ test: venv
 	@. $(VENV_ACTIVATE); $(COVERAGE) run -m unittest discover -s tests
 	@. $(VENV_ACTIVATE); $(COVERAGE) report
 
-testRun: install
+testRun: install package
 	@$(CLI_APP) -h
 	@$(CLI_APP) -w testWorkingDir -g 
 	@$(CLI_APP) -a 1234 -w testWorkingDir &
@@ -23,6 +23,8 @@ testRun: install
 	@$(CLI_APP) -s -d
 	@$(CLI_APP) -s -j
 	@$(CLI_APP) -s -d -j
+	@$(CLI_APP) -w testWorkingDir -x
+	@rm cryptoData.xlsx
 	@rm -rf testWorkingDir
 
 package: venv test

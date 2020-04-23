@@ -33,5 +33,8 @@ setuptools.setup(
         'certifi',
         'appdirs',
         'chardet',
+        'et-xmlfile',
+        'jdcal',
+        'openpyxl'
     ],
     )
