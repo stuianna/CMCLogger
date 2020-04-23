@@ -74,6 +74,12 @@ def create_arguments(parser):
         help="Log level. Must be one of either \
             DEBUG, INFO, WARNING, ERROR or CRITICAL. Default = INFO")
 
+    parser.add_argument(
+        '-x',
+        '--excel',
+        action='store_true',
+        help="Save the current crytpocurreny database to an Excel file 'cryptoData.xlsl'"
+    )
 
 def processLogLevel(level):
 
@@ -148,6 +154,11 @@ if __name__ == '__main__':
     except Exception as e:
         log.critical("Failed to start logger module. Exception {}.".format(e))
         print("Failed to start logger module. Exception {}.".format(e))
+        sys.exit()
+
+    if args.excel is True:
+        print("Copying database to excel file, this might take a while.")
+        cmcLogger.to_excel()
         sys.exit()
 
     if args.generate_config is True:

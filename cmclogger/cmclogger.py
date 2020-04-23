@@ -5,6 +5,7 @@ import os
 import time
 import logging
 import socket
+import pandas as pd
 from datetime import datetime
 from dbops.sqhelper import SQHelper
 from configchecker import ConfigChecker
@@ -155,6 +156,15 @@ class CMCLogger():
     def get_config_file(self):
         """ Get the configchecker.ConfigChecker config file object being used."""
         return self.__config
+
+    def to_excel(self):
+        tables = self.__database.get_table_names()
+        df_list = []
+        for table in tables:
+            df_list.append(self.__database.table_to_df(table))
+        writer = pd.ExcelWriter(r"cryptoData.xlsx")
+        _ = [A.to_excel(writer,sheet_name="{0}".format(tables[i])) for i, A in enumerate(df_list)]
+        writer.save()
 
     def __create_API_and_publisher(self):
         if self.__api is None:
