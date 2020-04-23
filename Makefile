@@ -24,7 +24,7 @@ testRun: install package
 	@$(CLI_APP) -s -j
 	@$(CLI_APP) -s -d -j
 	@$(CLI_APP) -w testWorkingDir -x
-	@rm cryptoData.xlsx
+	@rm -f cryptoData.xlsx 
 	@rm -rf testWorkingDir
 
 package: venv test
