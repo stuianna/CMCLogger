@@ -1,4 +1,4 @@
-from dateutil import parser
+from dateutil import parser, tz
 from io import StringIO
 import cmclogger.settings as settings
 import logging
@@ -81,7 +81,7 @@ class Reader():
     def __calculateMinutesSinceLastCall(self):
         lastCall = int((parser.parse(self.__statusFile.get_value(
             settings.status_file_last_call_section_name,
-            settings.status_file_option_timeStamp)).strftime('%s')))
+            settings.status_file_option_timeStamp)).astimezone(tz.tzlocal()).strftime('%s')))
         currentTime = int(time.time());
         return int((currentTime - lastCall) / 60)
 
