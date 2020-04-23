@@ -30,7 +30,7 @@ def create_arguments(parser):
         '--working_directory',
         nargs=1,
         help="Specify the directory to setup the configuration,\
-         CRITICAL   status and database files. If not supplied, set to user configuration directory.",
+         status and database files. If not supplied, set to user configuration directory.",
         default = None)
 
     parser.add_argument(

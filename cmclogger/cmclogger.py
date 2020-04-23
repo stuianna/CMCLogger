@@ -5,6 +5,7 @@ import os
 import time
 import logging
 import socket
+import daemon
 from datetime import datetime
 from dbops.sqhelper import SQHelper
 from configchecker import ConfigChecker
@@ -24,24 +25,62 @@ def daemon_already_running():
         log.info("New daemon logging instance started")
         return False
     except Exception as e:
+        _ = e
         log.warning("Attempting to start daemon which is already running")
         return True
 
 
 class CMCLogger():
+    """API wrapper for fetching, logging, storing and querying Cryptocurreny using the
+    Coin Market Cap (free) API
 
-    def __init__(self, workingDirectory, logLevel, apiKey=None):
-        self.__workingDirectory = workingDirectory
+    This API is, at the moment, is primarily set-up to be used with the CMCLogger script provided
+    in this package, however the API could be used stand-alone as follows:
+
+    Example Usage:
+    >>> working_directory = 'CMC_Logger'
+    >>> api_key = 'my_free_api_key'
+    >>> cmc = CMCLogger(working_directory, api_key = my_key)
+
+    Initialising the class object creates, (if it doesn't already exist ), the configuration file
+    and a data directory containing the cryptocurrency data, status file and log output. The
+    configuration file should be edited to customise parameters, but it is not required for
+    functionaility.
+
+    Make an API call to CMC based on configuration file parameters, and store the results in the
+    sql database.
+    >>> cmc.fetch_and_store_data()
+
+    Optionally, the daemon can be started, which makes a call for new data at the interval set in
+    the configuratino file (default = 5 minutes)
+    >>> cmc.start_daemon()
+
+    See the module README for more detailed information
+    """
+
+    def __init__(self, working_directory, log_level=logging.WARNING, api_key=None):
+        self.__workingDirectory = working_directory
         self.__make_directories_as_needed()
-        self.__setup_logging(logLevel)
-        self.__config = self.__load_configuration(apiKey)
+        self.__setup_logging(log_level)
+        self.__config = self.__load_configuration(api_key)
         self.__status = self.__setup_status_file()
         self.__database = self.__setup_database()
         self.__api = None
         self.__publisher = None
 
-    def start_daemon(self, forceStart=False):
-        if daemon_already_running() and not forceStart:
+    def start_daemon(self, force_start=False):
+        """ Start the logging daemon, if it is not already running.
+
+        The logging daemon uses the values found in config.ini in the working directory.
+        Calls are made to the CMC API at the configuration interval set with the requried parameters.
+
+        Parameters:
+        force_start: Start the daemon even if it is already running. Warning, this could result in rate limiting.
+
+        Return:
+        This call doesn't return
+        """
+        if daemon_already_running() and not force_start:
             return
 
         self.__status.set_value(settings.status_file_current_session_section_name, settings.status_file_option_successful_calls, 0)
@@ -49,6 +88,9 @@ class CMCLogger():
         self.__status.set_value(settings.status_file_current_session_section_name, settings.status_file_option_success_rate, 100.0)
         self.__create_API_and_publisher()
 
+        self.__daemon()
+
+    def __daemon(self):
         while True:
             goodResponse = self.__api.getLatest()
             self.__publisher.writeStatus(self.__api.getLatestStatus())
@@ -60,30 +102,59 @@ class CMCLogger():
 
             time.sleep(self.__api.secondsToNextAPICall())
 
+    def fetch_and_store_data(self, api_key=None):
+        """ Make an CMC API call and store the result in the database / status file
 
-    def fetch_and_store_data(self, apiKey=None):
+        The configuration will be sourced from config.ini in the working directory used
+        when the object was created.
+
+        Parameters:
+        api_key: Optionally make this API call with a different key as specified.
+
+        Returns:
+        (respnse_status, latest_data, latest_status) (tuple)
+
+        response_status (bool): True if the API call and storage completed successfully.
+        latest_data (dict): Latest good data returned from coin market cap API. This data is
+        guarenteed to be from the latest call only if response_status is True.
+        status (dict): Dictionary containing the status of the last call.
+        """
         self.__create_API_and_publisher()
-        goodResponse = self.__api.getLatest(apiKey)
+        goodResponse = self.__api.getLatest(api_key)
         self.__publisher.writeStatus(self.__api.getLatestStatus())
         if goodResponse is True:
             self.__publisher.writeData(self.__api.getLatestData())
         return goodResponse, self.__api.getLatestData(), self.__api.getLatestStatus()
 
     def write_custom_status(self, status):
+        """ Enter a custom status into the results API
+
+        Parameters:
+        status (dict): A correctly structured dictionary can be obtained from the
+        returned status of fetch_and_store_data
+        """
         self.__create_API_and_publisher()
         self.__publisher.writeStatus(status)
 
     def data_request(self, request):
+        """ Request data from the database
+
+        Parameters:
+        request (dict): {"query_type", "query_tag", "output_format", "output_detail"}
+        """
         reader = Reader(self.__status, self.__database, self.__config)
         print(reader.processRequest(request))
 
     def get_database(self):
+        """ Get the dbops.SQHelper data base object being used."""
         return self.__database
 
     def get_status_file(self):
+        """ Get the configchecker.ConfigChecker status file object being used."""
         return self.__status
 
     def get_config_file(self):
+        """ Get the configchecker.ConfigChecker config file object being used."""
         return self.__config
 
     def __create_API_and_publisher(self):
