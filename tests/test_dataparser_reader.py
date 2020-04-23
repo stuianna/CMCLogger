@@ -6,7 +6,7 @@ import cmclogger.settings as settings
 import json
 import time
 from cmclogger.cmclogger import CMCLogger
-from dateutil import parser
+from dateutil import parser, tz
 
 logging.disable(logging.CRITICAL)
 
@@ -50,9 +50,9 @@ class CMCAPI_configuration_setting_and_checking(unittest.TestCase):
         currentTime = int(time.time())
         lastCall = int((parser.parse(self.reader.get_status_file().get_value(
             settings.status_file_last_call_section_name,
-            settings.status_file_option_timeStamp)).strftime('%s')))
+            settings.status_file_option_timeStamp)).astimezone(tz.tzlocal()).strftime('%s')))
         minutes = (currentTime - lastCall) / (60)
-        self.assertEqual(output,"Last successful call {} minutes ago, health 80.0%.".format(int(minutes)))
+        self.assertEqual(output, "Last successful call {} minutes ago, health 80.0%.".format(int(minutes)))
 
     def test_getting_the_status_long_version_stdout(self):
         request = dict(requestFormat)
@@ -84,7 +84,7 @@ class CMCAPI_configuration_setting_and_checking(unittest.TestCase):
         currentTime = int(time.time())
         lastCall = int((parser.parse(self.reader.get_status_file().get_value(
             settings.status_file_last_call_section_name,
-            settings.status_file_option_timeStamp)).strftime('%s')))
+            settings.status_file_option_timeStamp)).astimezone(tz.tzlocal()).strftime('%s')))
         minutes = (currentTime - lastCall) / (60)
         expected = {
                 settings.output_json_last_call  : int(minutes),
