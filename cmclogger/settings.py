@@ -19,7 +19,7 @@ API_option_conversion_currency_symbol_default = '$'
 API_option_start_index = 'rank_start_index'
 API_option_start_index_default =  1
 API_option_end_index = 'rank_end_index'
-API_option_end_index_default = 1
+API_option_end_index_default = 200
 API_option_interval = 'request_interval'
 API_option_interval_default = 5
 
