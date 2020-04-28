@@ -49,7 +49,7 @@ class CMCAPI_configuration_setting_and_checking(unittest.TestCase):
                 settings.API_section_name,
                 settings.API_option_end_index,
                 int,
-                settings.API_option_end_index_default)
+                1)
         self.config.set_expectation(
                 settings.API_section_name,
                 settings.API_option_interval,
@@ -66,7 +66,7 @@ class CMCAPI_configuration_setting_and_checking(unittest.TestCase):
         self.assertIs(apiConfig['privateKey'],settings.API_option_privatate_key_default)
         self.assertIs(apiConfig['conversionCurrency'],settings.API_option_conversion_currency_default)
         self.assertIs(apiConfig['startIndex'],settings.API_option_start_index_default)
-        self.assertIs(apiConfig['endIndex'],settings.API_option_end_index_default)
+        self.assertIs(apiConfig['endIndex'],1)
         self.assertIs(apiConfig['callInterval'],settings.API_option_interval_default)
 
     def test_configuration_start_index_cant_be_less_than_one(self):
@@ -130,7 +130,7 @@ class API_getting_requests(unittest.TestCase):
                 settings.API_section_name,
                 settings.API_option_end_index,
                 int,
-                settings.API_option_end_index_default)
+                1)
         self.config.set_expectation(
                 settings.API_section_name,
                 settings.API_option_interval,
