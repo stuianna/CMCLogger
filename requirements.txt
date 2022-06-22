@@ -13,7 +13,7 @@ idna==2.9
 jdcal==1.4.1
 jeepney==0.4.3
 keyring==21.2.0
-numpy==1.18.2
+numpy==1.22.0
 openpyxl==3.0.3
 pandas==1.0.3
 pkginfo==1.5.0.1
